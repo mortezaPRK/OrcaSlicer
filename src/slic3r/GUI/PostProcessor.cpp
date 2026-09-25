@@ -182,9 +182,9 @@ static int run_script(const std::string& script, const std::string& gcode, std::
 // POSIX
 
 #include <cstdlib> // getenv()
-#include <boost/process.hpp>
+#include <boost/process/v1.hpp>
 
-namespace process = boost::process;
+namespace process = boost::process::v1;
 
 static int run_script(const std::string& script, const std::string& gcode, std::string& std_err)
 {

@@ -63,8 +63,8 @@ endif()
 
 ExternalProject_Add(dep_OpenSSL
     #EXCLUDE_FROM_ALL ON
-    URL "https://github.com/openssl/openssl/archive/OpenSSL_1_1_1w.tar.gz"
-    URL_HASH SHA256=2130E8C2FB3B79D1086186F78E59E8BC8D1A6AEDF17AB3907F4CB9AE20918C41
+    URL "https://github.com/openssl/openssl/archive/refs/tags/openssl-4.0.2.tar.gz"
+    URL_HASH SHA256=0c79e20fe326f50eb2ef58ee45306db2258d55bd16f6dbf6061658a1cad48c35
     # URL "https://github.com/openssl/openssl/archive/refs/tags/openssl-3.1.2.tar.gz"
     # URL_HASH SHA256=8c776993154652d0bb393f506d850b811517c8bd8d24b1008aef57fbe55d3f31
     DOWNLOAD_DIR ${DEP_DOWNLOAD_DIR}/OpenSSL
@@ -95,10 +95,3 @@ if (CMAKE_GENERATOR MATCHES "Visual Studio")
     # environment, and ClangCL's puts clang's headers first. Use the default.
     set_target_properties(dep_OpenSSL PROPERTIES VS_PLATFORM_TOOLSET "$(DefaultPlatformToolset)")
 endif ()
-
-ExternalProject_Add_Step(dep_OpenSSL install_cmake_files
-    DEPENDEES install
-
-    COMMAND ${CMAKE_COMMAND} -E copy_directory openssl "${DESTDIR}${CMAKE_INSTALL_LIBDIR}/cmake/openssl"
-    WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}"
-)

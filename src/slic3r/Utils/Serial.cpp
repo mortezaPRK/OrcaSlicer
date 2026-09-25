@@ -290,11 +290,11 @@ std::vector<std::string> scan_serial_ports()
 namespace asio = boost::asio;
 using boost::system::error_code;
 
-Serial::Serial(asio::io_service& io_service) :
+Serial::Serial(asio::io_context& io_service) :
 	asio::serial_port(io_service)
 {}
 
-Serial::Serial(asio::io_service& io_service, const std::string &name, unsigned baud_rate) :
+Serial::Serial(asio::io_context& io_service, const std::string &name, unsigned baud_rate) :
 	asio::serial_port(io_service, name)
 {
 	set_baud_rate(baud_rate);
@@ -407,12 +407,12 @@ bool Serial::read_line(unsigned timeout, std::string &line, error_code &ec)
  #else
 		this->get_io_service();
 #endif
-	asio::deadline_timer timer(io_service);
+	asio::steady_timer timer(io_service);
 	char c = 0;
 	bool fail = false;
 
 	while (true) {
-		io_service.reset();
+		io_service.restart();
 
 		asio::async_read(*this, boost::asio::buffer(&c, 1), [&](const error_code &read_ec, size_t size) {
 			if (ec || size == 0) {
@@ -423,7 +423,7 @@ bool Serial::read_line(unsigned timeout, std::string &line, error_code &ec)
 		});
 
 		if (timeout > 0) {
-			timer.expires_from_now(boost::posix_time::milliseconds(timeout));
+			timer.expires_after(std::chrono::milliseconds(timeout));
 			timer.async_wait([&](const error_code &ec) {
 				// Ignore timer aborts
 				if (!ec) {

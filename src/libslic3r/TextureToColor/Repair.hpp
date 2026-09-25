@@ -10,6 +10,7 @@
 #include <CGAL/Polygon_mesh_processing/orient_polygon_soup.h>
 #include <CGAL/Polygon_mesh_processing/polygon_soup_to_polygon_mesh.h>
 #include <CGAL/Polygon_mesh_processing/stitch_borders.h>
+#include <CGAL/boost/graph/border.h>
 #include <CGAL/Polygon_mesh_processing/triangulate_hole.h>
 #include <CGAL/boost/graph/graph_traits_Surface_mesh.h>
 #include <boost/log/trivial.hpp>
@@ -39,6 +40,15 @@ inline constexpr std::size_t MAX_REPAIRABLE_MESH_HOLE_EDGES = 500;
 // usually indicates a severely fragmented input (e.g. heavily damaged scans)
 // and rarely yields a usable result, so we skip hole closing entirely.
 inline constexpr std::size_t MAX_REPAIRABLE_MESH_BOUNDARY_EDGES = 5000;
+
+template <class PolygonMesh>
+inline void StitchBorders(PolygonMesh& mesh)
+{
+    using Halfedge = typename boost::graph_traits<PolygonMesh>::halfedge_descriptor;
+    std::vector<Halfedge> boundary_cycles;
+    CGAL::extract_boundary_cycles(mesh, std::back_inserter(boundary_cycles));
+    PMP::stitch_boundary_cycles(boundary_cycles, mesh);
+}
 
 struct RepairSetting
 {
@@ -90,11 +100,11 @@ inline void CloseBoundariesAndRepairManifoldness(cgalutils::CGALMesh& cgal_mesh)
     using HalfedgeDescriptor = boost::graph_traits<CGALMesh>::halfedge_descriptor;
     using FaceDescriptor = boost::graph_traits<CGALMesh>::face_descriptor;
 
-    PMP::stitch_borders(cgal_mesh);
+    StitchBorders(cgal_mesh);
     PMP::duplicate_non_manifold_vertices(cgal_mesh);
 
     std::vector<HalfedgeDescriptor> border_cycles;
-    PMP::extract_boundary_cycles(cgal_mesh, std::back_inserter(border_cycles));
+    CGAL::extract_boundary_cycles(cgal_mesh, std::back_inserter(border_cycles));
 
     for (const HalfedgeDescriptor h : border_cycles) {
         std::vector<FaceDescriptor> patch_faces;
@@ -198,7 +208,7 @@ inline bool RepairMesh(const TriMesh& mesh,
     BoundaryEdgeStats stats;
     {
         const auto t0 = Clock::now();
-        PMP::stitch_borders(cgal_mesh);
+        StitchBorders(cgal_mesh);
         PMP::duplicate_non_manifold_vertices(cgal_mesh);
         stats = ComputeBoundaryEdgeStats(cgal_mesh);
         BOOST_LOG_TRIVIAL(info) << "TextureToColor: RepairMesh stage=boundary_stats took="

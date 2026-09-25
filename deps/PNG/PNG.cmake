@@ -1,7 +1,7 @@
 if (APPLE)
     # Only disable NEON extension for Apple ARM builds, leave it enabled for Raspberry PI.
     set(_disable_neon_extension "-DPNG_ARM_NEON=off")
-elseif ("${DEPS_ARCH}" STREQUAL "arm64" AND CMAKE_CXX_COMPILER_ID STREQUAL Clang)
+elseif ("${DEPS_ARCH}" STREQUAL "arm64")
     # libpng's CMake ignores PNG_ARM_NEON on Windows ARM64 and skips the NEON
     # sources, but pngpriv.h enables NEON anyway.
     set(_disable_neon_extension "-DCMAKE_C_FLAGS=/DWIN32 /D_WINDOWS /DPNG_ARM_NEON_OPT=0")
@@ -12,11 +12,9 @@ endif ()
 if(APPLE AND IS_CROSS_COMPILE)
 # TODO: check if it doesn't create problem when compiling from arm to x86_64
     orcaslicer_add_cmake_project(PNG 
-        GIT_REPOSITORY https://github.com/glennrp/libpng.git 
-        GIT_TAG v1.6.35
+        GIT_REPOSITORY https://github.com/pnggroup/libpng.git
+        GIT_TAG v1.6.56
         DEPENDS ${ZLIB_PKG}
-        PATCH_COMMAND       ${GIT_EXECUTABLE} checkout -f -- . && git clean -df &&
-                            ${GIT_EXECUTABLE} apply --whitespace=fix ${CMAKE_CURRENT_LIST_DIR}/macos-arm64.patch ${CMAKE_CURRENT_LIST_DIR}/0002-clang19-macos.patch
         CMAKE_ARGS
             -DPNG_SHARED=OFF
             -DPNG_STATIC=ON
@@ -26,17 +24,10 @@ if(APPLE AND IS_CROSS_COMPILE)
             ${_disable_neon_extension}
     )
 else ()
-set(_patch_step "")
-    if (APPLE)
-        set(_patch_step PATCH_COMMAND ${PATCH_CMD} ${CMAKE_CURRENT_LIST_DIR}/PNG.patch ${CMAKE_CURRENT_LIST_DIR}/0002-clang19-macos.patch)
-    endif ()
     orcaslicer_add_cmake_project(PNG 
-        # GIT_REPOSITORY https://github.com/glennrp/libpng.git 
-        # GIT_TAG v1.6.35
-        URL https://github.com/glennrp/libpng/archive/refs/tags/v1.6.35.zip
-        URL_HASH SHA256=3d22d46c566b1761a0e15ea397589b3a5f36ac09b7c785382e6470156c04247f
+        URL https://github.com/pnggroup/libpng/archive/refs/tags/v1.6.56.zip
+        URL_HASH SHA256=dd5fc50c344b276f506d951432464dd0909764d45f9e0bd05871a761e9072ff4
         DEPENDS ${ZLIB_PKG}
-        "${_patch_step}"
         CMAKE_ARGS
             -DPNG_SHARED=OFF
             -DPNG_STATIC=ON

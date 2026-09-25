@@ -53,6 +53,7 @@
 #include "TopoDS_Builder.hxx"
 #include "TopoDS.hxx"
 #include "TDataStd_Name.hxx"
+#include "TDF_LabelSequence.hxx"
 #include "BRepBuilderAPI_Transform.hxx"
 #include "TopExp_Explorer.hxx"
 #include "TopExp_Explorer.hxx"

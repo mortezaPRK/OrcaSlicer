@@ -11,8 +11,8 @@ else()
 endif()
 
 orcaslicer_add_cmake_project(FREETYPE
-    URL https://github.com/SoftFever/orca_deps/releases/download/freetype-2.12.1.tar.gz/freetype-2.12.1.tar.gz
-    URL_HASH SHA256=efe71fd4b8246f1b0b1b9bfca13cfff1c9ad85930340c27df469733bbb620938
+    URL https://download.savannah.gnu.org/releases/freetype/freetype-2.14.3.tar.xz
+    URL_HASH SHA256=36bc4f1cc413335368ee656c42afca65c5a3987e8768cc28cf11ba775e785a5f
     #DEPENDS ${ZLIB_PKG}
     #"${_patch_step}"
     CMAKE_ARGS

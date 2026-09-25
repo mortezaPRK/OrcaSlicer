@@ -15,8 +15,9 @@
 #include <boost/process/pipe.hpp>
 #include <boost/process/io.hpp>
 #include <exception>
+#include <boost/process/v1/env.hpp>
 #ifdef _WIN32
-#include <boost/process/windows.hpp>
+#include <boost/process/v1/windows.hpp>
 #endif
 
 namespace Slic3r { namespace GUI {
@@ -140,7 +141,7 @@ bool ProcessRunner::run_command_line_async(const std::string& command_line,
     m_launching.store(true);
 
     m_launch_thread = std::thread([this, command_line]() {
-        namespace bp = boost::process;
+        namespace bp = boost::process::v1;
 
         try {
             auto stdout_pipe = std::make_unique<bp::ipstream>();
@@ -230,7 +231,7 @@ ProcessRunner::SyncResult ProcessRunner::run_sync(const std::string& executable,
     SyncResult result;
 
     try {
-        namespace bp = boost::process;
+        namespace bp = boost::process::v1;
 
         bp::ipstream std_out;
         bp::ipstream std_err;

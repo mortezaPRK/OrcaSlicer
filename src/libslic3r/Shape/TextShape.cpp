@@ -50,6 +50,9 @@
 #include "Font_BRepTextBuilder.hxx"
 #include "BRepPrimAPI_MakePrism.hxx"
 #include "Font_FontMgr.hxx"
+#include "NCollection_Sequence.hxx"
+#include "NCollection_UtfIterator.hxx"
+#include "TCollection_HAsciiString.hxx"
 
 #include <boost/log/trivial.hpp>
 
@@ -73,7 +76,7 @@ std::vector<std::string> init_occt_fonts()
     Handle(Font_FontMgr) aFontMgr = Font_FontMgr::GetInstance();
     aFontMgr->InitFontDataBase();
 
-    TColStd_SequenceOfHAsciiString availFontNames;
+    NCollection_Sequence<Handle(TCollection_HAsciiString)> availFontNames;
     aFontMgr->GetAvailableFontsNames(availFontNames);
     stdFontNames.reserve(availFontNames.Size());
 
@@ -156,7 +159,7 @@ static bool TextToBRep(const char* text, const char* font, const float theTextHe
     // get the text width
     text_width                  = 0;
     NCollection_String coll_str = aText;
-    for (NCollection_Utf8Iter anIter = coll_str.Iterator(); *anIter != 0;) {
+    for (NCollection_UtfIterator<char> anIter = coll_str.Iterator(); *anIter != 0;) {
         const Standard_Utf32Char aCharThis = *anIter;
         const Standard_Utf32Char aCharNext = *++anIter;
         double                   width     = aFont.AdvanceX(aCharThis, aCharNext);

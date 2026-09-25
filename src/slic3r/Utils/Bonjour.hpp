@@ -162,11 +162,11 @@ public:
 	UdpSocket(Bonjour::ReplyFn replyfn
 		, const boost::asio::ip::address& multicast_address
 		, const boost::asio::ip::address& interface_address
-		, std::shared_ptr< boost::asio::io_service > io_service);
+		, std::shared_ptr< boost::asio::io_context > io_service);
 
 	UdpSocket(Bonjour::ReplyFn replyfn
 		, const boost::asio::ip::address& multicast_address
-		, std::shared_ptr< boost::asio::io_service > io_service);
+		, std::shared_ptr< boost::asio::io_context > io_service);
 
 	void send();
 	void async_receive();
@@ -179,7 +179,7 @@ protected:
 	boost::asio::ip::address					    multicast_address;
 	boost::asio::ip::udp::socket					socket;
 	boost::asio::ip::udp::endpoint					mcast_endpoint;
-	std::shared_ptr< boost::asio::io_service >	io_service;
+	std::shared_ptr< boost::asio::io_context >	io_service;
 	std::vector<BonjourRequest>						requests;
 };
 
@@ -193,7 +193,7 @@ public:
 		, Bonjour::ReplyFn replyfn
 		, const boost::asio::ip::address& multicast_address
 		, const boost::asio::ip::address& interface_address
-		, std::shared_ptr< boost::asio::io_service > io_service)
+		, std::shared_ptr< boost::asio::io_context > io_service)
 		: UdpSocket(replyfn, multicast_address, interface_address, io_service)
 		, txt_keys(txt_keys)
 		, service(service)
@@ -210,7 +210,7 @@ public:
 		, std::string protocol
 		, Bonjour::ReplyFn replyfn
 		, const boost::asio::ip::address& multicast_address
-		, std::shared_ptr< boost::asio::io_service > io_service)
+		, std::shared_ptr< boost::asio::io_context > io_service)
 		: UdpSocket(replyfn, multicast_address, io_service)
 		, txt_keys(txt_keys)
 		, service(service)
@@ -248,7 +248,7 @@ public:
 		, Bonjour::ReplyFn replyfn
 		, const boost::asio::ip::address& multicast_address
 		, const boost::asio::ip::address& interface_address
-		, std::shared_ptr< boost::asio::io_service > io_service)
+		, std::shared_ptr< boost::asio::io_context > io_service)
 		: UdpSocket(replyfn, multicast_address, interface_address, io_service)
 		, hostname(hostname)
 
@@ -260,7 +260,7 @@ public:
 	ResolveSocket(const std::string& hostname
 		, Bonjour::ReplyFn replyfn
 		, const boost::asio::ip::address& multicast_address
-		, std::shared_ptr< boost::asio::io_service > io_service)
+		, std::shared_ptr< boost::asio::io_context > io_service)
 		: UdpSocket(replyfn, multicast_address, io_service)
 		, hostname(hostname)
 

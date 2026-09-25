@@ -17,15 +17,10 @@ if ("${DEPS_ARCH}" STREQUAL "arm64" AND CMAKE_CXX_COMPILER_ID STREQUAL Clang)
     set(_disable_carotene "-DWITH_CAROTENE=OFF")
 endif ()
 
-if (IN_GIT_REPO)
-    set(OpenCV_DIRECTORY_FLAG --directory ${BINARY_DIR_REL}/dep_OpenCV-prefix/src/dep_OpenCV)
-endif ()
-
 orcaslicer_add_cmake_project(OpenCV
     ${_options}
-    URL https://github.com/opencv/opencv/archive/refs/tags/4.6.0.tar.gz
-    URL_HASH SHA256=1ec1cba65f9f20fe5a41fda1586e01c70ea0c9a6d7b67c9e13edf0cfe2239277
-    PATCH_COMMAND git apply ${OpenCV_DIRECTORY_FLAG} --verbose --ignore-space-change --whitespace=fix ${CMAKE_CURRENT_LIST_DIR}/0001-vs.patch  ${CMAKE_CURRENT_LIST_DIR}/0002-clang19-macos.patch
+    URL https://github.com/opencv/opencv/archive/refs/tags/5.0.0.tar.gz
+    URL_HASH SHA256=b0528f5a1d379d59d4701cb28c36e22214cc51cf64594e5b56f2d3e6c0233095
     CMAKE_ARGS
     -DBUILD_SHARED_LIBS=0
        -DBUILD_PERE_TESTS=OFF
@@ -92,4 +87,3 @@ orcaslicer_add_cmake_project(OpenCV
        -DHAVE_WIN32UI=FALSE
        ${_disable_carotene}
 )
-

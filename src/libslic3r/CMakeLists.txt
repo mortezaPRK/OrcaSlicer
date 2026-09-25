@@ -647,12 +647,14 @@ target_include_directories(libslic3r SYSTEM PUBLIC ${OpenCASCADE_INCLUDE_DIR})
 find_package(JPEG REQUIRED)
 find_package(Draco REQUIRED)
 
+if (OpenCASCADE_MAJOR_VERSION GREATER_EQUAL 8)
+    set(OCCT_STEP_LIBS TKDESTEP TKDE)
+else ()
+    set(OCCT_STEP_LIBS TKXDESTEP TKSTEP TKSTEP209 TKSTEPAttr TKSTEPBase)
+endif ()
+
 set(OCCT_LIBS
-    TKXDESTEP
-    TKSTEP
-    TKSTEP209
-    TKSTEPAttr
-    TKSTEPBase
+    ${OCCT_STEP_LIBS}
     TKXCAF
     TKXSBase
     TKVCAF

@@ -52,6 +52,7 @@
 #include <CGAL/Polygon_mesh_processing/remesh.h>
 #include <CGAL/Polygon_mesh_processing/repair_polygon_soup.h>
 #include <CGAL/Polygon_mesh_processing/orientation.h>
+#include <CGAL/boost/graph/border.h>
 // BBS: for segment
 #include <CGAL/mesh_segmentation.h>
 #include <CGAL/property_map.h>
@@ -515,7 +516,7 @@ void segment(CGALMesh& src, std::vector<CGALMesh>& dst, double smoothing_alpha =
         typedef boost::graph_traits<_EpicMesh>::halfedge_descriptor      halfedge_descriptor;
         typedef boost::graph_traits<_EpicMesh>::vertex_descriptor        vertex_descriptor;
         std::vector<halfedge_descriptor> border_cycles;
-        CGAL::Polygon_mesh_processing::extract_boundary_cycles(out, std::back_inserter(border_cycles));
+        CGAL::extract_boundary_cycles(out, std::back_inserter(border_cycles));
         for (halfedge_descriptor h : border_cycles)
         {
             std::vector<face_descriptor>  patch_facets;
@@ -706,7 +707,7 @@ bool repair(TriangleMesh& mesh, RepairedMeshErrors* repaired_errors, std::string
             using halfedge_descriptor = boost::graph_traits<_EpicMesh>::halfedge_descriptor;
 
             std::vector<halfedge_descriptor> borders;
-            PMP::extract_boundary_cycles(cgal_mesh, std::back_inserter(borders));
+            CGAL::extract_boundary_cycles(cgal_mesh, std::back_inserter(borders));
 
             for (halfedge_descriptor h : borders) {
                 PMP::triangulate_and_refine_hole(cgal_mesh, h);

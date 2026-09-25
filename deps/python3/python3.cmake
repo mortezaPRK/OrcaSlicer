@@ -2,14 +2,16 @@
 include(ProcessorCount)
 ProcessorCount(NPROC)
 
-set(_python_version "3.12.13")
+set(_python_version "3.14.7")
 string(REGEX REPLACE "^([0-9]+\\.[0-9]+)\\..*" "\\1" _python_version_short "${_python_version}")
 set(_python_url "https://www.python.org/ftp/python/${_python_version}/Python-${_python_version}.tar.xz")
-set(_python_sha256 "c08bc65a81971c1dd5783182826503369466c7e67374d1646519adf05207b684")
+set(_python_sha256 "3b48dac8fb59f62eaa67ac83c1eb12bda1b7a08406dd286e252c11a66be27f81")
 
 
-set(_patch_cmd "")
-if(WIN32)
+set(_patch_cmd ${CMAKE_COMMAND}
+    -DPYTHON_SOURCE_DIR=<SOURCE_DIR>
+    -P ${CMAKE_CURRENT_LIST_DIR}/patch_openssl4.cmake)
+if(WIN32 AND _python_version MATCHES "^3\\.12\\.")
 
     # Fix python build failure on Windows if python is not available, due to wrong nuget download URL
     # See https://github.com/python/cpython/issues/153438
@@ -264,7 +266,6 @@ else()
     set(_conf_cmd ./configure
         --prefix=${_python_prefix}
         --enable-shared
-        --enable-optimizations
         --with-openssl=${DESTDIR}
         --without-static-libpython
         --disable-test-modules

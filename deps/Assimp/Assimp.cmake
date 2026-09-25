@@ -1,9 +1,9 @@
 if(CMAKE_VERSION VERSION_LESS 3.22)
-    set(_assimp_url "https://github.com/assimp/assimp/archive/refs/tags/v5.3.1.tar.gz")
-    set(_assimp_hash "SHA256=a07666be71afe1ad4bc008c2336b7c688aca391271188eb9108d0c6db1be53f1")
+    set(_assimp_url "https://github.com/assimp/assimp/archive/refs/tags/v6.0.5.tar.gz")
+    set(_assimp_hash "SHA256=edf3749559c2b7d1f758ffb66fc5bec62186221e623b7f2e8969f17ee46ecb6f")
 else()
-    set(_assimp_url "https://github.com/assimp/assimp/archive/refs/tags/v5.4.3.tar.gz")
-    set(_assimp_hash "SHA256=66dfbaee288f2bc43172440a55d0235dfc7bf885dda6435c038e8000e79582cb")
+    set(_assimp_url "https://github.com/assimp/assimp/archive/refs/tags/v6.0.5.tar.gz")
+    set(_assimp_hash "SHA256=edf3749559c2b7d1f758ffb66fc5bec62186221e623b7f2e8969f17ee46ecb6f")
 endif()
 
 # Assimp's bundled zlib (contrib/zlib) is too old to compile against the modern
