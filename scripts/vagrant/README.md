@@ -19,6 +19,8 @@ Each guest defaults to four CPUs and 8 GiB RAM. Set `ORCA_VM_CPUS` and
 `ORCA_VM_MEMORY` to override these values. Allow enough disk space for the
 guest images, toolchains, and independent dependency builds. Run builds one
 at a time on hosts with limited RAM or disk space.
+Builds default to two parallel jobs; set `ORCA_BUILD_JOBS` to increase this
+when the selected guest has enough CPU and memory.
 
 ## Linux and macOS
 

@@ -1,4 +1,7 @@
-param([ValidateSet('setup', 'build')][string]$Action = 'setup')
+param(
+    [ValidateSet('setup', 'build')][string]$Action = 'setup',
+    [ValidateRange(1, 256)][int]$BuildJobs = 2
+)
 $ErrorActionPreference = 'Stop'
 if ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture -ne 'Arm64') {
     throw 'This guest must run Windows ARM64.'
@@ -24,7 +27,7 @@ if ($Action -eq 'setup') {
     }
     $buildArgs = '--install-vs buildtools --install-deps --arch arm64 -l --unattended'
 } else {
-    $buildArgs = '-ds -l -x --arch arm64 --run-tests -j 2 --build-dir C:\orca-build --deps-dir C:\orca-deps'
+    $buildArgs = "-ds -l -x --arch arm64 --run-tests -j $BuildJobs --build-dir C:\orca-build --deps-dir C:\orca-deps"
 }
 # Keep long-running native output in a guest log. WinRM's streaming file reader
 # can race a growing output file during verbose installers and builds.

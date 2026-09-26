@@ -10,6 +10,7 @@ Vagrant.configure("2") do |config|
   suffix = Digest::SHA256.hexdigest(File.realpath(__dir__))[0, 8]
   cpus = Integer(ENV.fetch("ORCA_VM_CPUS", "4"))
   memory = Integer(ENV.fetch("ORCA_VM_MEMORY", "8192"))
+  build_jobs = Integer(ENV.fetch("ORCA_BUILD_JOBS", "2"))
 
   { "linux" => "ghcr.io/cirruslabs/ubuntu:24.04",
     "macos" => "ghcr.io/cirruslabs/macos-tahoe-xcode:latest" }.each do |os, image|
@@ -31,7 +32,8 @@ Vagrant.configure("2") do |config|
       guest.vm.provision "setup", type: "shell", privileged: false,
                          path: "scripts/vagrant/unix.sh", args: [os, "setup", source]
       guest.vm.provision "build", type: "shell", run: "never", privileged: false,
-                         path: "scripts/vagrant/unix.sh", args: [os, "build", source]
+                         path: "scripts/vagrant/unix.sh", args: [os, "build", source],
+                         env: { "CMAKE_BUILD_PARALLEL_LEVEL" => build_jobs.to_s }
     end
   end
 
@@ -52,6 +54,7 @@ Vagrant.configure("2") do |config|
     guest.vm.provision "setup", type: "shell", path: "scripts/vagrant/windows.ps1",
                        args: ["-Action", "setup"]
     guest.vm.provision "build", type: "shell", run: "never",
-                       path: "scripts/vagrant/windows.ps1", args: ["-Action", "build"]
+                       path: "scripts/vagrant/windows.ps1",
+                       args: ["-Action", "build", "-BuildJobs", build_jobs.to_s]
   end
 end
