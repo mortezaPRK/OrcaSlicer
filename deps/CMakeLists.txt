@@ -354,7 +354,7 @@ if(FLATPAK)
     find_package(CURL)
     find_package(JPEG)
     find_package(Freetype)
-    find_package(OpenSSL 1.1...<3.2)
+    find_package(OpenSSL 4.0.2...<5)
     find_package(CURL)
 endif()
 
@@ -415,6 +415,11 @@ include(Draco/Draco.cmake)
 # 3.1 has everything in the right place, but the md5 funcs used are deprecated
 # a grep across the repo shows it is used for other things
 # TODO: update openssl and everything that uses <openssl/md5.h>
+include(FFMPEG/FFMPEG.cmake)
+include(Assimp/Assimp.cmake)
+
+
+# Use the bundled OpenSSL unless the Flatpak SDK provides the required version.
 set(OPENSSL_PKG "")
 if(NOT OPENSSL_FOUND)
     include(OpenSSL/OpenSSL.cmake)
