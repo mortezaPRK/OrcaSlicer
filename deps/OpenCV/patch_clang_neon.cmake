@@ -1,0 +1,15 @@
+set(_header "modules/core/include/opencv2/core/hal/intrin_neon.hpp")
+file(READ "${_header}" _source)
+# Clang's lane macros use unqualified scalar types, which otherwise resolve to
+# cv::softfloat/softdouble. Keep the aliases local to avoid leaking them into cv.
+set(_old "template<int i> inline _Tp v_extract_n(_Tpvec v) { return (_Tp)vgetq_lane_##suffix(v.val, i); }")
+set(_new "template<int i> inline _Tp v_extract_n(_Tpvec v) { using ::float32_t; using ::float64_t; return (_Tp)vgetq_lane_##suffix(v.val, i); }")
+string(FIND "${_source}" "${_new}" _patched)
+if(_patched EQUAL -1)
+    string(FIND "${_source}" "${_old}" _position)
+    if(_position EQUAL -1)
+        message(FATAL_ERROR "OpenCV NEON lane extraction macro was not found")
+    endif()
+    string(REPLACE "${_old}" "${_new}" _source "${_source}")
+    file(WRITE "${_header}" "${_source}")
+endif()

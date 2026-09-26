@@ -15,12 +15,15 @@ endif ()
 set(_disable_carotene "")
 if ("${DEPS_ARCH}" STREQUAL "arm64" AND CMAKE_CXX_COMPILER_ID STREQUAL Clang)
     set(_disable_carotene "-DWITH_CAROTENE=OFF")
+    set(_opencv_patch_command PATCH_COMMAND ${CMAKE_COMMAND} -P
+        ${CMAKE_CURRENT_LIST_DIR}/patch_clang_neon.cmake)
 endif ()
 
 orcaslicer_add_cmake_project(OpenCV
     ${_options}
     URL https://github.com/opencv/opencv/archive/refs/tags/5.0.0.tar.gz
     URL_HASH SHA256=b0528f5a1d379d59d4701cb28c36e22214cc51cf64594e5b56f2d3e6c0233095
+    ${_opencv_patch_command}
     CMAKE_ARGS
     -DBUILD_SHARED_LIBS=0
        -DBUILD_PERE_TESTS=OFF
