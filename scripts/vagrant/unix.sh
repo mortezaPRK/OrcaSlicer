@@ -30,8 +30,9 @@ else
 fi
 
 mkdir -p "$work_dir"
-# Keep source changes current while preserving this guest's build caches.
-rsync -a --delete --exclude '/.vagrant/' --exclude '/.cache/' \
+# Compare content: vendored releases can carry timestamps older than the build.
+# Changed files receive fresh guest timestamps; unchanged files keep theirs.
+rsync -ac --no-times --delete --exclude '/.vagrant/' --exclude '/.cache/' \
     --exclude '/build*/' --exclude '/deps/build*/' --exclude '/deps/DL_CACHE/' \
     --exclude '/deps_src/build/' "$source_dir/" "$work_dir/"
 cd "$work_dir"
