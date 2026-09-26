@@ -5,8 +5,10 @@ if ("${DEPS_ARCH}" STREQUAL "arm64" AND CMAKE_CXX_COMPILER_ID STREQUAL Clang)
     set(_occt_compiler_args -DCMAKE_C_COMPILER:STRING=cl -DCMAKE_CXX_COMPILER:STRING=cl)
 endif ()
 
+set(_occt_install_args "")
 if(WIN32)
     set(library_build_type "Shared")
+    set(_occt_install_args -DINSTALL_DIR_BIN:STRING=bin/occt)
 else()
     set(library_build_type "Static")
 endif()
@@ -39,6 +41,7 @@ orcaslicer_add_cmake_project(OCCT
     CMAKE_ARGS
         -DCMAKE_CXX_STANDARD=17
         -DBUILD_LIBRARY_TYPE=${library_build_type}
+        ${_occt_install_args}
         -DUSE_TK=OFF
         -DUSE_TBB=OFF
 	#-DUSE_FREETYPE=OFF
