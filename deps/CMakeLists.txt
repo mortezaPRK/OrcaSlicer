@@ -26,9 +26,12 @@ endif()
 
 cmake_minimum_required(VERSION 3.2)
 if (APPLE)
-    # if CMAKE_OSX_DEPLOYMENT_TARGET is not set, set it to 12.0 (the lowest Xcode 27 accepts)
+    # Swiper 14 requires Safari 16.4, included with macOS 13.3.
     if (NOT CMAKE_OSX_DEPLOYMENT_TARGET)
-        set(CMAKE_OSX_DEPLOYMENT_TARGET "12.0" CACHE STRING "Minimum OS X deployment version" FORCE)
+        set(CMAKE_OSX_DEPLOYMENT_TARGET "13.3" CACHE STRING "Minimum OS X deployment version" FORCE)
+    endif ()
+    if (CMAKE_OSX_DEPLOYMENT_TARGET VERSION_LESS "13.3")
+        message(FATAL_ERROR "OrcaSlicer requires macOS 13.3 or newer for its embedded webviews")
     endif ()
     message(STATUS "CMAKE_OSX_DEPLOYMENT_TARGET: ${CMAKE_OSX_DEPLOYMENT_TARGET}")
 
