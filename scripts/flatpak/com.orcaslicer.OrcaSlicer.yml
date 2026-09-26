@@ -52,18 +52,19 @@ modules:
       - -Dtests=disabled
     sources:
       - type: archive
-        url: https://gstreamer.freedesktop.org/src/gst-plugins-good/gst-plugins-good-1.22.8.tar.xz
-        sha256: e305b9f07f52743ca481da0a4e0c76c35efd60adaf1b0694eb3bb021e2137e39
+        url: https://gstreamer.freedesktop.org/src/gst-plugins-good/gst-plugins-good-1.28.7.tar.xz
+        sha256: 87256969c82cf3bc8574301f3e7044a90de0ac500a5a27d8ba38c4dde894dd8b
 
   - name: glu
+    buildsystem: meson
     build-options:
       cxxflags: -Wno-register
     config-opts:
-      - --disable-static
+      - -Ddefault_library=shared
     sources:
       - type: archive
-        url: https://ftp.osuosl.org/pub/blfs/conglomeration/glu/glu-9.0.2.tar.xz
-        sha256: 6e7280ff585c6a1d9dfcdf2fca489251634b3377bfc33c29e4002466a38d02d4
+        url: https://archive.mesa3d.org/glu/glu-9.0.3.tar.xz
+        sha256: bd43fe12f374b1192eb15fe20e45ff456b9bc26ab57f0eee919f96ca0f8a330f
     cleanup:
       - /include
       - /lib/*.a
@@ -73,10 +74,9 @@ modules:
   - name: kde-extra-cmake-modules
     buildsystem: cmake-ninja
     sources:
-      - type: git
-        url: https://github.com/KDE/extra-cmake-modules
-        tag: v5.249.0
-        commit: 008ae77d0cd2a97c346228ab30b99279643e5022
+      - type: archive
+        url: https://download.kde.org/stable/frameworks/6.30/extra-cmake-modules-6.30.0.tar.xz
+        sha256: 22c9f7ff930dae7329faebf2942d2424f4a298c43bb3f11e217be6b12f227f6e
     cleanup:
       - /
 
@@ -134,8 +134,8 @@ modules:
       # submodules (PCRE2, etc.) that are not included in GitHub tarballs.
       - type: git
         url: https://github.com/SoftFever/Orca-deps-wxWidgets.git
-        tag: orca-3.3.2
-        commit: db1005db3dea2c37a46fb455a9a02e37aa360751
+        branch: v3.3.2
+        commit: 88f3483ca546fbf4ad732e1acd94cc930935077a
 
   # OrcaSlicer C++ dependencies (built offline with pre-downloaded archives)
   - name: orca_deps
@@ -181,154 +181,160 @@ modules:
       # ExternalProject_Add finds them and skips network downloads.
       # ---------------------------------------------------------------
 
-      # Boost 1.84.0
+      # Boost
       - type: file
-        url: https://github.com/boostorg/boost/releases/download/boost-1.84.0/boost-1.84.0.tar.gz
-        sha256: 4d27e9efed0f6f152dc28db6430b9d3dfb40c0345da7342eaa5a987dde57bd95
+        url: https://github.com/boostorg/boost/releases/download/boost-1.92.0/boost-1.92.0-cmake.tar.gz
+        sha256: f51707c27359a0df0cac1beada86de31bb5eed5e8285592dadec384df99c2984
         dest: external-packages/Boost
 
-      # Eigen 5.0.1
+      # Eigen
       - type: file
         url: https://gitlab.com/libeigen/eigen/-/archive/5.0.1/eigen-5.0.1.zip
         sha256: 0dbb1f9e3aaad66f352c03227d8c983f6f0b49e0b07e71a7300f4abcc01aee12
         dest: external-packages/Eigen
 
-      # TBB v2021.5.0
+      # TBB
       - type: file
-        url: https://github.com/oneapi-src/oneTBB/archive/refs/tags/v2021.5.0.zip
-        sha256: 83ea786c964a384dd72534f9854b419716f412f9d43c0be88d41874763e7bb47
+        url: https://github.com/oneapi-src/oneTBB/archive/refs/tags/v2023.1.0.zip
+        sha256: 0712621d19d2fbc1dc0d4e964bf8d9592c78d79f62991d2173bad741a7461c4a
         dest: external-packages/TBB
 
-      # Cereal v1.3.0
+      # Cereal
       - type: file
-        url: https://github.com/USCiLab/cereal/archive/refs/tags/v1.3.0.zip
-        sha256: 71642cb54658e98c8f07a0f0d08bf9766f1c3771496936f6014169d3726d9657
+        url: https://github.com/USCiLab/cereal/archive/refs/tags/v1.3.2.zip
+        sha256: e72c3fa8fe3d531247773e346e6824a4744cc6472a25cf9b30599cd52146e2ae
         dest: external-packages/Cereal
 
-      # Qhull v8.0.2
+      # Qhull
       - type: file
         url: https://github.com/qhull/qhull/archive/v8.0.2.zip
         sha256: a378e9a39e718e289102c20d45632f873bfdc58a7a5f924246ea4b176e185f1e
         dest: external-packages/Qhull
 
-      # GLFW 3.4
+      # GLFW
       - type: file
-        url: https://github.com/glfw/glfw/archive/refs/tags/3.4.zip
-        sha256: a133ddc3d3c66143eba9035621db8e0bcf34dba1ee9514a9e23e96afd39fd57a
+        url: https://github.com/glfw/glfw/archive/refs/tags/3.5.1.zip
+        sha256: e9a80355e8a0c59b15ae8576c2c3aeae792c2b1082ec426dc93bde70d5017fda
         dest: external-packages/GLFW
 
-      # OpenCSG 1.4.2
+      # OpenCSG
       - type: file
-        url: https://github.com/floriankirsch/OpenCSG/archive/refs/tags/opencsg-1-4-2-release.zip
-        sha256: 51afe0db79af8386e2027d56d685177135581e0ee82ade9d7f2caff8deab5ec5
+        url: https://github.com/floriankirsch/OpenCSG/archive/refs/tags/opencsg-1-8-2-release.zip
+        sha256: f5095e5b14ff13b941f6abafea46f9cbc70ff0451deac56966dbc6e03c68801c
         dest: external-packages/OpenCSG
 
-      # SolveSpace libslvs (2D sketch constraint solver, Design tab)
+      # SLVS
       - type: file
         url: https://github.com/JacobStoren/SolveSpaceLib/archive/4d8704523e4bf212fadf5189f92484244f670fea.zip
         sha256: 1c4bdde9c3c6ef20ea4b50b73601de56769f2eb131b36927d7c6489f102e6c30
         dest: external-packages/SLVS
 
-      # Blosc 1.17.0 (tamasmeszaros fork)
+      # Blosc
       - type: file
-        url: https://github.com/tamasmeszaros/c-blosc/archive/refs/heads/v1.17.0_tm.zip
-        sha256: dcb48bf43a672fa3de6a4b1de2c4c238709dad5893d1e097b8374ad84b1fc3b3
+        url: https://github.com/Blosc/c-blosc/archive/refs/tags/v1.21.6.zip
+        sha256: 1919c97d55023c04aa8771ea8235b63e9da3c22e3d2a68340b33710d19c2a2eb
         dest: external-packages/Blosc
 
-      # OpenEXR v2.5.5
+      # OpenEXR
       - type: file
-        url: https://github.com/AcademySoftwareFoundation/openexr/archive/refs/tags/v2.5.5.zip
-        sha256: 0307a3d7e1fa1e77e9d84d7e9a8694583fbbbfd50bdc6884e2c96b8ef6b902de
+        url: https://github.com/AcademySoftwareFoundation/openexr/archive/refs/tags/v3.5.0.tar.gz
+        sha256: 0dc41a9dd84c868ad89c892382f75f6835a73decbefab9366d6f168bf9322954
         dest: external-packages/OpenEXR
 
-      # OpenVDB (custom fork)
+      # OpenEXR's configure step must not fetch Imath from the network.
+      - type: archive
+        url: https://github.com/AcademySoftwareFoundation/Imath/archive/refs/tags/v3.2.3.tar.gz
+        sha256: e10c12b3f21f45bf08e09d4215d9c7691368d747beebd840de0b6fefed2df9f8
+        dest: external-packages/Imath
+
+      # OpenVDB
       - type: file
-        url: https://github.com/tamasmeszaros/openvdb/archive/a68fd58d0e2b85f01adeb8b13d7555183ab10aa5.zip
-        sha256: f353e7b99bd0cbfc27ac9082de51acf32a8bc0b3e21ff9661ecca6f205ec1d81
+        url: https://github.com/AcademySoftwareFoundation/openvdb/archive/refs/tags/v13.1.0.tar.gz
+        sha256: 21659ef2330a06805519dd8d4369375f181a0dfee205b0180da69b4edd3329ae
         dest: external-packages/OpenVDB
 
-      # GMP 6.2.1
+      # GMP
       - type: file
-        url: https://github.com/SoftFever/OrcaSlicer_deps/releases/download/gmp-6.2.1/gmp-6.2.1.tar.bz2
-        sha256: eae9326beb4158c386e39a356818031bd28f3124cf915f8c5b1dc4c7a36b4d7c
+        url: https://ftp.gnu.org/gnu/gmp/gmp-6.3.0.tar.xz
+        sha256: a3c2b80201b89e68616f4ad30bc66aee4927c3ce50e33929ca819d5c43538898
         dest: external-packages/GMP
 
-      # MPFR 4.2.2
+      # MPFR
       - type: file
         url: https://ftp.gnu.org/gnu/mpfr/mpfr-4.2.2.tar.bz2
         sha256: 9ad62c7dc910303cd384ff8f1f4767a655124980bb6d8650fe62c815a231bb7b
         dest: external-packages/MPFR
 
-      # CGAL 5.6.3
+      # CGAL
       - type: file
-        url: https://github.com/CGAL/cgal/releases/download/v5.6.3/CGAL-5.6.3.zip
-        sha256: 5d577acb4a9918ccb960491482da7a3838f8d363aff47e14d703f19fd84733d4
+        url: https://github.com/CGAL/cgal/releases/download/v6.2.1/CGAL-6.2.1.zip
+        sha256: eebd737d9b7f0199647ba5c1f9f6c7a3d0651aacef9c2fd4dedc52da6c25edbe
         dest: external-packages/CGAL
 
-      # NLopt v2.5.0
+      # NLopt
       - type: file
-        url: https://github.com/stevengj/nlopt/archive/v2.5.0.tar.gz
-        sha256: c6dd7a5701fff8ad5ebb45a3dc8e757e61d52658de3918e38bab233e7fd3b4ae
+        url: https://github.com/stevengj/nlopt/archive/refs/tags/v2.11.0.tar.gz
+        sha256: 53e552d83e9294d67db37f0f4a23f15933a9ef698485301a18b98b40004cf0de
         dest: external-packages/NLopt
 
-      # libnoise 1.0
+      # libnoise
       - type: file
         url: https://github.com/SoftFever/Orca-deps-libnoise/archive/refs/tags/1.0.zip
         sha256: 96ffd6cc47898dd8147aab53d7d1b1911b507d9dbaecd5613ca2649468afd8b6
         dest: external-packages/libnoise
 
-      # Draco 1.5.7
+      # Draco
       - type: file
         url: https://github.com/google/draco/archive/refs/tags/1.5.7.zip
         sha256: 27b72ba2d5ff3d0a9814ad40d4cb88f8dc89a35491c0866d952473f8f9416b77
         dest: external-packages/Draco
 
-      # Assimp 5.4.3
+      # Assimp
       - type: file
-        url: https://github.com/assimp/assimp/archive/refs/tags/v5.4.3.tar.gz
-        sha256: 66dfbaee288f2bc43172440a55d0235dfc7bf885dda6435c038e8000e79582cb
+        url: https://github.com/assimp/assimp/archive/refs/tags/v6.0.5.tar.gz
+        sha256: edf3749559c2b7d1f758ffb66fc5bec62186221e623b7f2e8969f17ee46ecb6f
         dest: external-packages/Assimp
 
-      # OpenSSL 1.1.1w (GNOME SDK has 3.x; OrcaSlicer requires 1.1.x)
+      # OpenSSL
       - type: file
-        url: https://github.com/openssl/openssl/archive/OpenSSL_1_1_1w.tar.gz
-        sha256: 2130e8c2fb3b79d1086186f78e59e8bc8d1a6aedf17ab3907f4cb9ae20918c41
+        url: https://github.com/openssl/openssl/archive/refs/tags/openssl-4.0.2.tar.gz
+        sha256: 0c79e20fe326f50eb2ef58ee45306db2258d55bd16f6dbf6061658a1cad48c35
         dest: external-packages/OpenSSL
 
-      # CURL 7.75.0 (built from source to link against OpenSSL 1.1.x)
+      # CURL
       - type: file
-        url: https://github.com/curl/curl/archive/refs/tags/curl-7_75_0.zip
-        sha256: a63ae025bb0a14f119e73250f2c923f4bf89aa93b8d4fafa4a9f5353a96a765a
+        url: https://github.com/curl/curl/archive/refs/tags/curl-8_22_0.zip
+        sha256: 04c0f58029f2819b60e24e3a088660fe101fb9d48cd45e7f3dd2db7805e03e5b
         dest: external-packages/CURL
 
-      # OCCT (OpenCASCADE) V7_6_0
+      # OCCT
       - type: file
-        url: https://github.com/Open-Cascade-SAS/OCCT/archive/refs/tags/V7_6_0.zip
-        sha256: 28334f0e98f1b1629799783e9b4d21e05349d89e695809d7e6dfa45ea43e1dbc
+        url: https://github.com/Open-Cascade-SAS/OCCT/archive/refs/tags/V8_0_1.zip
+        sha256: 7c033d917ee8f040c0512d289dcc5f02c148889d5bac17c3e25639accb44f0da
         dest: external-packages/OCCT
 
-      # OpenCV 4.6.0
+      # OpenCV
       - type: file
-        url: https://github.com/opencv/opencv/archive/refs/tags/4.6.0.tar.gz
-        sha256: 1ec1cba65f9f20fe5a41fda1586e01c70ea0c9a6d7b67c9e13edf0cfe2239277
+        url: https://github.com/opencv/opencv/archive/refs/tags/5.0.0.tar.gz
+        sha256: b0528f5a1d379d59d4701cb28c36e22214cc51cf64594e5b56f2d3e6c0233095
         dest: external-packages/OpenCV
 
-      # CPython 3.12.13
+      # python3
       - type: file
-        url: https://www.python.org/ftp/python/3.12.13/Python-3.12.13.tar.xz
-        sha256: c08bc65a81971c1dd5783182826503369466c7e67374d1646519adf05207b684
+        url: https://www.python.org/ftp/python/3.14.7/Python-3.14.7.tar.xz
+        sha256: 3b48dac8fb59f62eaa67ac83c1eb12bda1b7a08406dd286e252c11a66be27f81
         dest: external-packages/python3
 
-      # wxInspector 1.0.0
+      # wxInspector
       - type: file
         url: https://github.com/Noisyfox/wxInspector/archive/refs/tags/v1.0.0.zip
         sha256: 0ba163956f2d468b19a91b96c5aba66ee9610843ea41dda628ea44cdafde7db7
         dest: external-packages/wxInspector
 
-      # FFmpeg n7.0.3
+      # FFMPEG
       - type: file
-        url: https://github.com/FFmpeg/FFmpeg/archive/refs/tags/n7.0.3.tar.gz
-        sha256: deedcabe339165214a3637df4c86a507aef0d793cf8774ff68735f4737e8ddbc
+        url: https://ffmpeg.org/releases/ffmpeg-9.0.2.tar.xz
+        sha256: 8c3850283eb25fa026482078a04051e0be17347b09ef81a0849bec15a96e002e
         dest: external-packages/FFMPEG
 
       # libdatachannel v0.24.5
@@ -345,28 +351,34 @@ modules:
       # These are only used if find_package() fails to locate them.
       # ---------------------------------------------------------------
 
-      # ZLIB 1.2.13
+      # ZLIB
       - type: file
-        url: https://github.com/madler/zlib/archive/refs/tags/v1.2.13.zip
-        sha256: c2856951bbf30e30861ace3765595d86ba13f2cf01279d901f6c62258c57f4ff
+        url: https://github.com/madler/zlib/archive/refs/tags/v1.3.2.zip
+        sha256: 31fd9fee98812abcf147d0e103bc4d2f983c35a8d7a807a328a299f3a74e0050
         dest: external-packages/ZLIB
 
-      # libpng 1.6.35
+      # EXPAT
       - type: file
-        url: https://github.com/glennrp/libpng/archive/refs/tags/v1.6.35.zip
-        sha256: 3d22d46c566b1761a0e15ea397589b3a5f36ac09b7c785382e6470156c04247f
+        url: https://github.com/libexpat/libexpat/archive/refs/tags/R_2_8_5.tar.gz
+        sha256: fd022c541a189bd5bee042a22188351b31e39b9389c2525fa98c28bd05c9ef21
+        dest: external-packages/EXPAT
+
+      # PNG
+      - type: file
+        url: https://github.com/pnggroup/libpng/archive/refs/tags/v1.6.56.zip
+        sha256: dd5fc50c344b276f506d951432464dd0909764d45f9e0bd05871a761e9072ff4
         dest: external-packages/PNG
 
-      # libjpeg-turbo 3.0.1
+      # JPEG
       - type: file
-        url: https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/3.0.1.zip
-        sha256: d6d99e693366bc03897677650e8b2dfa76b5d6c54e2c9e70c03f0af821b0a52f
+        url: https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/3.2.0.zip
+        sha256: 1b4c2cb6cba1ca5e53b9e85eeeab02154cab4b70894c96e97a9c747a26d19d63
         dest: external-packages/JPEG
 
-      # Freetype 2.12.1
+      # FREETYPE
       - type: file
-        url: https://github.com/SoftFever/orca_deps/releases/download/freetype-2.12.1.tar.gz/freetype-2.12.1.tar.gz
-        sha256: efe71fd4b8246f1b0b1b9bfca13cfff1c9ad85930340c27df469733bbb620938
+        url: https://download.savannah.gnu.org/releases/freetype/freetype-2.14.3.tar.xz
+        sha256: 36bc4f1cc413335368ee656c42afca65c5a3987e8768cc28cf11ba775e785a5f
         dest: external-packages/FREETYPE
 
   - name: OrcaSlicer

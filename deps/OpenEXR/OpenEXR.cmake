@@ -1,3 +1,7 @@
+if(FLATPAK)
+    set(_openexr_offline_imath "-DFETCHCONTENT_SOURCE_DIR_IMATH=${DEP_DOWNLOAD_DIR}/Imath")
+endif()
+
 # Check if we're building for arm on x86_64 and just for OpenEXR, build fat
 # binaries.  We need this because it compiles some code to generate other
 # source and we need to be able to run the executables.  When we link the
@@ -47,6 +51,7 @@ orcaslicer_add_cmake_project(OpenEXR
         -DOPENEXR_VIEWERS_ENABLE:BOOL=OFF
         -DOPENEXR_BUILD_UTILS:BOOL=OFF
         -DOPENEXR_IMATH_TAG:STRING=v3.2.3
+        ${_openexr_offline_imath}
         ${_openexr_arm64_args}
 )
 endif()
