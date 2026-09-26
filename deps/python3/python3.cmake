@@ -102,7 +102,7 @@ if(WIN32)
         file(TO_NATIVE_PATH "${CMAKE_CURRENT_LIST_DIR}/arm64-unicodectype.props" _python_arm64_props)
         string(APPEND _python_rsp "/p:ForceImportAfterCppTargets=\"${_python_arm64_props}\"\n")
     endif()
-    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/python3-msbuild.rsp" "${_python_rsp}")
+    file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/python3-msbuild.rsp" CONTENT "${_python_rsp}")
     set(_conf_cmd
         ${CMAKE_COMMAND} -DPYTHON_SOURCE_DIR=<SOURCE_DIR>
             -P ${CMAKE_CURRENT_LIST_DIR}/patch_openssl4.cmake
@@ -299,6 +299,12 @@ ExternalProject_Add(dep_python3
     BUILD_COMMAND ${_build_cmd}
     INSTALL_COMMAND ${_install_cmd}
 )
+ExternalProject_Add_StepDependencies(dep_python3 patch
+    "${CMAKE_CURRENT_LIST_DIR}/patch_openssl4.cmake")
+if(WIN32)
+    ExternalProject_Add_StepDependencies(dep_python3 configure
+        "${CMAKE_CURRENT_BINARY_DIR}/python3-msbuild.rsp")
+endif()
 
 # Python depends on OpenSSL and ZLIB
 if(TARGET dep_OpenSSL)

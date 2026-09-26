@@ -90,3 +90,8 @@ orcaslicer_add_cmake_project(OpenCV
        -DHAVE_WIN32UI=FALSE
        ${_disable_carotene}
 )
+
+if(_opencv_patch_command)
+    ExternalProject_Add_StepDependencies(dep_OpenCV patch
+        "${CMAKE_CURRENT_LIST_DIR}/patch_clang_neon.cmake")
+endif()
