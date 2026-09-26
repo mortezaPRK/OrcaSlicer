@@ -41,7 +41,7 @@ function Set_RecentFile_MouseRightBtn_Event()
 			}
 		});
 
-	$(document).bind("contextmenu",function(e){
+	$(document).on("contextmenu",function(e){
 		//在这里书写代码，构建个性右键化菜单
 		return false;
 	});	
