@@ -23,6 +23,7 @@
         NotMatch    regexes; none may match any output line
         NotExists   paths that must not exist after the case runs
         DateStampedZip  require a bundle date from during this case's invocation
+        HostDefault    exercise the actual host architecture instead of targeting x64
 
 .PARAMETER Name
     Run only the cases whose name matches this regex. Headings with no
@@ -109,6 +110,8 @@ New-Item -ItemType Directory -Force -Path $noVs | Out-Null
 $slnDir = Join-Path $fixtures 'sln'
 New-Item -ItemType Directory -Force -Path $slnDir | Out-Null
 Set-Content -Path (Join-Path $slnDir 'OrcaSlicer.sln') -Value '' -Encoding ascii
+
+$hostArchitecture = if ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq 'Arm64') { 'ARM64' } else { 'x64' }
 
 $cases = @(
     'argument handling'
@@ -237,9 +240,8 @@ $cases = @(
        Contains = @('Detecting Visual Studio') }
 
     'architecture'
-    @{ Name = 'x64 is the default'; Args = @('-d')
-       Contains = @('Configuration: Release, x64')
-       NotContains = @('build-arm64') }
+    @{ Name = 'target architecture defaults to the host'; Args = @('-d'); HostDefault = $true
+       Contains = @("Configuration: Release, $hostArchitecture", "-A $hostArchitecture") }
     @{ Name = 'arm64 sets the generator platform and deps tree'; Args = @('-d', '--arch', 'arm64')
        Contains = @('-A ARM64', 'deps/build-arm64') }
     @{ Name = 'the architecture is matched case-insensitively'; Args = @('-d', '--arch', 'ARM64')
@@ -552,8 +554,16 @@ $cases = @(
        Contains = @('id=Microsoft.VisualStudio.2022.BuildTools') }
     @{ Name = '-l adds the clang compiler and the MSBuild toolset'; Args = @('-u', '--install-vs', 'buildtools', '-l')
        Contains = @('VC.Llvm.Clang ', 'VC.Llvm.ClangToolset') }
+     @{ Name = 'CMake is not pinned for arm64'; Args = @('-u', '--arch', 'arm64')
+       Contains = @('Kitware.CMake')
+       NotContains = @('--version') }
+    @{ Name = 'unattended installs accept agreements and do not prompt'; Args = @('--install-vs', 'buildtools', '--unattended')
+       Contains = @('--silent --disable-interactivity --accept-package-agreements --accept-source-agreements', '--custom "--norestart') }
+     @{ Name = 'CMake is not pinned for x64'; Args = @('-u', '--arch', 'x64')
+        Contains = @('Kitware.CMake')
+        NotContains = @('--version') }
     @{ Name = 'installing for arm64 asks for the ARM64 toolset'; Args = @('--install-vs', 'buildtools', '--arch', 'arm64')
-       Contains = @('Microsoft.VisualStudio.Component.VC.Tools.ARM64') }
+       Contains = @('--add Microsoft.VisualStudio.Component.VC.Tools.ARM64') }
     @{ Name = 'an x64 install asks only for the x64 toolset'; Args = @('--install-vs', 'buildtools')
        Contains = @('Microsoft.VisualStudio.Component.VC.Tools.x86.x64')
        NotContains = @('VC.Tools.ARM64') }
@@ -849,7 +859,7 @@ function Invoke-BuildScript {
 
 $knownFields = @(
     'Name', 'Args', 'ExpectExit', 'DryRun', 'First', 'Env',
-    'Contains', 'NotContains', 'Match', 'NotMatch', 'NotExists', 'DateStampedZip'
+    'Contains', 'NotContains', 'Match', 'NotMatch', 'NotExists', 'DateStampedZip', 'HostDefault'
 )
 
 function Test-Case {
@@ -859,6 +869,13 @@ function Test-Case {
     # own members too, so $Case.Contains returns the Contains *method* whenever
     # the case has no key by that name.
     $argv = @($Case['Args'])
+    # Keep path and packaging expectations independent of the machine running
+    # this suite. The host-default case exercises the actual OS architecture.
+    $testsHostDefault = $Case['HostDefault']
+    if ($argv.Count -gt 0 -and $argv -notcontains '--arch' -and
+        $argv -notcontains '--help' -and -not $testsHostDefault) {
+        $argv += @('--arch', 'x64')
+    }
     if (-not $Case.ContainsKey('DryRun') -or $Case['DryRun']) { $argv += '--dry-run' }
 
     $expect = 0

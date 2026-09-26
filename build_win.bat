@@ -44,6 +44,7 @@ call :add_arg build_tests bool "" tests "Build the unit tests"
 call :add_arg run_tests bool "" run-tests "Build the unit tests and run them"
 call :add_arg pack_deps bool p pack "Bundle the built dependencies into a zip file"
 call :add_arg install_deps bool u install-deps "Install or update CMake, Perl and Git with WinGet"
+call :add_arg unattended bool "" unattended "Install prerequisites silently and accept package agreements"
 call :add_arg install_vs string "" install-vs "Also install Visual Studio: buildtools or ide"
 call :add_arg kill_jobs bool k kill-jobs "Kill any running build and compiler processes"
 call :add_arg print_help bool h help "Print this help message"
@@ -265,23 +266,30 @@ if "%install_deps%" == "ON" (
     REM name the ones that did not rather than claiming they all did.
     set "install_failed="
     set "winget_args=-e --source=winget"
+    set "vs_install_args="
+    if "%unattended%" == "ON" (
+        set "winget_args=!winget_args! --silent --disable-interactivity --accept-package-agreements --accept-source-agreements"
+        REM winget supplies --quiet and --wait for this installer.
+        set "vs_install_args=--norestart"
+    )
     if not "%install_vs%" == "" (
         set "vs_year=!vs_winget_%vs_version%!"
         set "ide_component_flag="
-        if /I "%install_vs%" == "ide" set "ide_component_flag=Microsoft.VisualStudio.Component.VC.CoreIde"
+        if /I "%install_vs%" == "ide" set "ide_component_flag=--add Microsoft.VisualStudio.Component.VC.CoreIde"
         REM Two components: the clang-cl compiler itself, and the MSBuild
         REM toolset that lets the Visual Studio generator drive it. One
         REM install covers both x64 and ARM64.
         set "clang_cl_flag="
-        if "%use_clang_cl%" == "ON" set "clang_cl_flag=Microsoft.VisualStudio.Component.VC.Llvm.Clang Microsoft.VisualStudio.Component.VC.Llvm.ClangToolset"
+        if "%use_clang_cl%" == "ON" set "clang_cl_flag=--add Microsoft.VisualStudio.Component.VC.Llvm.Clang --add Microsoft.VisualStudio.Component.VC.Llvm.ClangToolset"
         REM The x64 tools build the host tooling either way; targeting ARM64
         REM needs its own toolset on top of them.
         set "arm64_tools_flag="
-        if /I "%arch%" == "ARM64" set "arm64_tools_flag=Microsoft.VisualStudio.Component.VC.Tools.ARM64"
-        call :print_and_run winget install !winget_args! --id=Microsoft.VisualStudio!vs_year!.!vs_edition! --force --custom "--add !ide_component_flag! Microsoft.VisualStudio.Component.VC.Tools.x86.x64 !arm64_tools_flag! Microsoft.VisualStudio.Component.VC.CMake.Project Microsoft.VisualStudio.Component.Windows11SDK.22621 !clang_cl_flag!"
+        if /I "%arch%" == "ARM64" set "arm64_tools_flag=--add Microsoft.VisualStudio.Component.VC.Tools.ARM64"
+        call :print_and_run winget install !winget_args! --id=Microsoft.VisualStudio!vs_year!.!vs_edition! --force --custom "!vs_install_args! !ide_component_flag! --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 !arm64_tools_flag! --add Microsoft.VisualStudio.Component.VC.CMake.Project --add Microsoft.VisualStudio.Component.Windows11SDK.22621 !clang_cl_flag!"
         call :note_failed "Visual Studio" !errorlevel!
     )
 
+    REM Boost.Context uses winfib on ARM64, so current CMake works there too.
     call :print_and_run winget install !winget_args! --id=Kitware.CMake
     call :note_failed CMake !errorlevel!
     call :print_and_run winget install !winget_args! --id=StrawberryPerl.StrawberryPerl
