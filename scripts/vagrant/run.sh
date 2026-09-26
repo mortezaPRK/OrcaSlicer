@@ -36,6 +36,7 @@ PY
         local stage=$1 result=0
         vagrant provision windows --provision-with "$stage" || result=$?
         mkdir -p .vagrant/logs
+        rm -f ".vagrant/logs/windows-$stage-guest.log"
         VBoxManage guestcontrol "$windows_id" copyfrom --username=vagrant --password=vagrant \
             "C:/orca-logs/$stage.log" ".vagrant/logs/windows-$stage-guest.log" || true
         return "$result"

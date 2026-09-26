@@ -10,7 +10,7 @@ New-Item -ItemType Directory -Force $source | Out-Null
 New-Item -ItemType Directory -Force $work | Out-Null
 tar.exe -xf "$env:USERPROFILE\orca-source.tar" -C $source
 if ($LASTEXITCODE -ne 0) { throw 'Source extraction failed.' }
-robocopy.exe $source $work /MIR /NFL /NDL /NJH /NJS
+robocopy.exe $source $work /MIR /NFL /NDL /NJH /NJS /XD "$work\deps\DL_CACHE"
 if ($LASTEXITCODE -ge 8) { throw 'Source synchronization failed.' }
 Set-Location $work
 $env:PATH = [Environment]::GetEnvironmentVariable('PATH', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('PATH', 'User')
