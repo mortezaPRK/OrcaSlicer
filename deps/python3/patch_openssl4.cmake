@@ -43,3 +43,14 @@ string(REPLACE "ws2_32.lib;libcrypto.lib;libssl.lib;"
 if(NOT _props STREQUAL _original_props)
     file(WRITE "${_openssl_props}" "${_props}")
 endif()
+
+# Our static OpenSSL installation has no prebuilt-DLL directory containing its
+# license. Include the license from the matching source archive in Python's bundle.
+set(_regen_targets "${PYTHON_SOURCE_DIR}/PCbuild/regen.targets")
+file(READ "${_regen_targets}" _targets)
+set(_original_targets "${_targets}")
+string(REPLACE "$(opensslOutDir)LICENSE" "$(OrcaOpenSSLLicenseDir)LICENSE"
+               _targets "${_targets}")
+if(NOT _targets STREQUAL _original_targets)
+    file(WRITE "${_regen_targets}" "${_targets}")
+endif()

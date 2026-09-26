@@ -87,10 +87,13 @@ if(WIN32)
 
     # MSBuild reads extra switches from PCbuild/msbuild.rsp.
     set(_python_rsp "/p:PlatformToolset=${_python_platform_toolset}\n")
+    ExternalProject_Get_Property(dep_OpenSSL SOURCE_DIR)
+    set(_python_openssl_license_dir "${SOURCE_DIR}/")
     # Use the same OpenSSL 4 headers and static libraries as the slicer.
     string(APPEND _python_rsp
         "/p:opensslIncludeDir=\"${DESTDIR}/include\"\n"
         "/p:opensslOutDir=\"${DESTDIR}/lib\"\n"
+        "/p:OrcaOpenSSLLicenseDir=\"${_python_openssl_license_dir}\"\n"
         "/p:SkipCopySSLDLL=true\n")
     # VS 2026's ARM64 code generator needs about 27 GB for one function in
     # Objects/unicodectype.c (python/cpython#153668); the property sheet compiles
