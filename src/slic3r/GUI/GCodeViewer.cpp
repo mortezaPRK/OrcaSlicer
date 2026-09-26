@@ -245,7 +245,7 @@ int GCodeViewer::SequentialView::ActualSpeedImguiWidget::plot(const char* label,
     if (!ImGui::ItemAdd(total_bb, 0, &frame_bb))
         return -1;
 
-    const bool hovered = ImGui::ItemHoverable(frame_bb, id);
+    const bool hovered = ImGui::ItemHoverable(frame_bb, id, ImGuiItemFlags_None);
 
     ImGui::RenderFrame(frame_bb.Min, frame_bb.Max, ImGui::GetColorU32(ImGuiCol_FrameBg), true, style.FrameRounding);
 
@@ -3218,7 +3218,7 @@ void GCodeViewer::render_legend_color_arr_recommen(float window_padding)
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(window_padding * 3, 0));
 
     // ImGui::Dummy({window_padding, window_padding});
-    ImGui::BeginChild("#AMS", ImVec2(0, AMS_container_height), true, ImGuiWindowFlags_AlwaysUseWindowPadding);
+    ImGui::BeginChild("#AMS", ImVec2(0, AMS_container_height), ImGuiChildFlags_Borders | ImGuiChildFlags_AlwaysUseWindowPadding);
     {
         float available_width   = ImGui::GetContentRegionAvail().x;
         float half_width       = available_width * 0.49f;
@@ -3229,7 +3229,7 @@ void GCodeViewer::render_legend_color_arr_recommen(float window_padding)
         imgui.bold_text(_u8L("Filament Grouping"));
         ImGui::SameLine();
         std::string tip_str = _u8L("Why this grouping");
-        ImGui::SetCursorPosX(ImGui::GetWindowContentRegionWidth() - window_padding - ImGui::CalcTextSize(tip_str.c_str()).x);
+        ImGui::SetCursorPosX((ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x) - window_padding - ImGui::CalcTextSize(tip_str.c_str()).x);
         link_filament_group_wiki(tip_str);
         ImGui::Separator();
         ImGui::PopStyleColor();
@@ -3241,7 +3241,7 @@ void GCodeViewer::render_legend_color_arr_recommen(float window_padding)
         ImDrawList *child_begin_draw_list = ImGui::GetWindowDrawList();
         ImVec2      cursor_pos            = ImGui::GetCursorScreenPos();
         child_begin_draw_list->AddRectFilled(cursor_pos, ImVec2(cursor_pos.x + half_width, cursor_pos.y + line_height), IM_COL32(255, 255, 255, 10));
-        ImGui::BeginChild("#LeftAMS", ImVec2(half_width, ams_item_height), false, ImGuiWindowFlags_AlwaysUseWindowPadding);
+        ImGui::BeginChild("#LeftAMS", ImVec2(half_width, ams_item_height), ImGuiChildFlags_AlwaysUseWindowPadding);
         {
             imgui.text(_u8L("Left nozzle"));
             ImGui::Dummy({window_padding, window_padding});
@@ -3256,7 +3256,7 @@ void GCodeViewer::render_legend_color_arr_recommen(float window_padding)
         ImGui::SameLine();
         cursor_pos = ImGui::GetCursorScreenPos();
         child_begin_draw_list->AddRectFilled(cursor_pos, ImVec2(cursor_pos.x + half_width, cursor_pos.y + line_height), IM_COL32(255, 255, 255, 10));
-        ImGui::BeginChild("#RightAMS", ImVec2(half_width, ams_item_height), false, ImGuiWindowFlags_AlwaysUseWindowPadding);
+        ImGui::BeginChild("#RightAMS", ImVec2(half_width, ams_item_height), ImGuiChildFlags_AlwaysUseWindowPadding);
         {
             imgui.text(_u8L("Right nozzle"));
             ImGui::Dummy({window_padding, window_padding});
@@ -3345,7 +3345,7 @@ void GCodeViewer::render_legend_color_arr_recommen(float window_padding)
 
         ImGui::SameLine();
         std::string wiki_str = _u8L("Wiki Guide"); // ORCA
-        ImGui::SetCursorPosX(ImGui::GetWindowContentRegionWidth() - window_padding - ImGui::CalcTextSize(wiki_str.c_str()).x);
+        ImGui::SetCursorPosX((ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x) - window_padding - ImGui::CalcTextSize(wiki_str.c_str()).x);
         link_filament_group_wiki(wiki_str);
 
         ImGui::EndChild();

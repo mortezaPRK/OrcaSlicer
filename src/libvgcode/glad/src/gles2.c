@@ -761,7 +761,7 @@ static GLADapiproc glad_dlsym_handle(void* handle, const char *name) {
   typedef __eglMustCastToProperFunctionPointerType (GLAD_API_PTR *PFNEGLGETPROCADDRESSPROC)(const char *name);
 #endif
   extern __eglMustCastToProperFunctionPointerType emscripten_GetProcAddress(const char *name);
-#elif GLAD_GLES2_USE_SYSTEM_EGL
+#elif defined(GLAD_GLES2_USE_SYSTEM_EGL)
   #include <EGL/egl.h>
   typedef __eglMustCastToProperFunctionPointerType (GLAD_API_PTR *PFNEGLGETPROCADDRESSPROC)(const char *name);
 #else
@@ -841,10 +841,11 @@ int gladLoaderLoadGLES2(void) {
     userptr.get_proc_address_ptr = emscripten_GetProcAddress;
     version = gladLoadGLES2UserPtr(glad_gles2_get_proc, &userptr);
 #else
+#ifndef GLAD_GLES2_USE_SYSTEM_EGL
     if (eglGetProcAddress == NULL) {
         return 0;
     }
-
+#endif
     did_load = _glad_GLES2_loader_handle == NULL;
     handle = glad_gles2_dlopen_handle();
     if (handle != NULL) {

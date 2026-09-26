@@ -20,6 +20,7 @@ add_library(stb_dxt::stb_dxt ALIAS stb_dxt)
 # Install headers if needed
 install(FILES 
     stb_dxt.h
+    ryg_dxt.h
     DESTINATION include/stb_dxt
 )
 

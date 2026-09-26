@@ -23,11 +23,7 @@
 #define nearbyint(a) _mm_cvtsd_si64(_mm_set_sd(a)) /* Note: expression type is (int64_t) */
 #endif
 
-#ifdef USINGZ
-namespace Clipper2Lib_Z {
-#else
 namespace Clipper2Lib {
-#endif
 
   // Orca: tbbmalloc scales far better than the default heap when all slicing threads clip at once.
   static void* NodeAlloc(size_t size)

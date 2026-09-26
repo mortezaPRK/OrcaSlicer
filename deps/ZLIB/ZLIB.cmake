@@ -4,6 +4,6 @@ orcaslicer_add_cmake_project(ZLIB
   CMAKE_ARGS
     -DZLIB_BUILD_SHARED=OFF
     -DZLIB_BUILD_STATIC=ON
-    -DSKIP_INSTALL_FILES=ON         # Prevent installation of man pages et al.
+    -DZLIB_BUILD_TESTING=OFF
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON
 )

@@ -713,7 +713,7 @@ target_link_libraries(libslic3r
         assimp::assimp
     PRIVATE
         ${CMAKE_DL_LIBS}
-        ${EXPAT_LIBRARIES}
+        EXPAT::EXPAT
         ${OCCT_LIBS}
         boost_libs
         cereal::cereal

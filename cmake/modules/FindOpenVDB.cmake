@@ -102,6 +102,18 @@ may be provided to tell this module where to look.
 
 #]=======================================================================]
 
+# Prefer the module shipped with our dependency build. Modern OpenVDB uses
+# Imath, while the legacy fallback below expects IlmBase.
+if (NOT OPENVDB_FIND_MODULE_PATH)
+  find_path(_openvdb_installed_module_path FindOpenVDB.cmake
+    HINTS ${CMAKE_PREFIX_PATH}
+    PATH_SUFFIXES lib/cmake/OpenVDB lib64/cmake/OpenVDB
+    NO_DEFAULT_PATH)
+  if (_openvdb_installed_module_path)
+    set(OPENVDB_FIND_MODULE_PATH "${_openvdb_installed_module_path}")
+  endif ()
+endif ()
+
 # If an explicit openvdb module path was specified, that will be used
 if (OPENVDB_FIND_MODULE_PATH)
   set(_module_path_bak ${CMAKE_MODULE_PATH})
@@ -114,6 +126,15 @@ if (OPENVDB_FIND_MODULE_PATH)
 
   set(CMAKE_MODULE_PATH ${_module_path_bak})
   if (OpenVDB_FOUND)
+    # The upstream module omits private compression libraries for static builds.
+    if (OPENVDB_USE_STATIC_LIBS)
+      if (OpenVDB_USES_BLOSC)
+        target_link_libraries(OpenVDB::openvdb INTERFACE "$<LINK_ONLY:Blosc::blosc>")
+      endif ()
+      if (OpenVDB_USES_ZLIB)
+        target_link_libraries(OpenVDB::openvdb INTERFACE "$<LINK_ONLY:ZLIB::ZLIB>")
+      endif ()
+    endif ()
     return()
   endif ()
 

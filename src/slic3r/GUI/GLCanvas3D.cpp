@@ -972,7 +972,7 @@ void GLCanvas3D::Labels::render(const std::vector<const ModelInstance*>& sorted_
         }
 
         // force re-render while the windows gets to its final size (it takes several frames)
-        if (ImGui::GetWindowContentRegionWidth() + 2.0f * ImGui::GetStyle().WindowPadding.x != ImGui::CalcWindowNextAutoFitSize(ImGui::GetCurrentWindow()).x)
+        if ((ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x) + 2.0f * ImGui::GetStyle().WindowPadding.x != ImGui::CalcWindowNextAutoFitSize(ImGui::GetCurrentWindow()).x)
             imgui.set_requires_extra_frame();
 
         imgui.end();
@@ -1020,10 +1020,10 @@ void GLCanvas3D::Tooltip::render(const Vec2d& mouse_position, GLCanvas3D& canvas
 
     // force re-render while the windows gets to its final size (it may take several frames) or while hidden
 #if ENABLE_ENHANCED_IMGUI_SLIDER_FLOAT
-    if (alpha < 1.0f || ImGui::GetWindowContentRegionWidth() + 2.0f * ImGui::GetStyle().WindowPadding.x != ImGui::CalcWindowNextAutoFitSize(ImGui::GetCurrentWindow()).x)
+    if (alpha < 1.0f || (ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x) + 2.0f * ImGui::GetStyle().WindowPadding.x != ImGui::CalcWindowNextAutoFitSize(ImGui::GetCurrentWindow()).x)
         imgui.set_requires_extra_frame();
 #else
-    if (alpha < 1.0f || ImGui::GetWindowContentRegionWidth() + 2.0f * ImGui::GetStyle().WindowPadding.x != ImGui::CalcWindowNextAutoFitSize(ImGui::GetCurrentWindow()).x)
+    if (alpha < 1.0f || (ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x) + 2.0f * ImGui::GetStyle().WindowPadding.x != ImGui::CalcWindowNextAutoFitSize(ImGui::GetCurrentWindow()).x)
         canvas.request_extra_frame();
 #endif // ENABLE_ENHANCED_IMGUI_SLIDER_FLOAT
 
@@ -9375,7 +9375,7 @@ void GLCanvas3D::_render_style_editor()
                 ImGui::PopTextWrapPos();
                 ImGui::EndTooltip();
             }
-            ImGui::BeginChild("##colors", ImVec2(0, 0), true, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_NavFlattened);
+            ImGui::BeginChild("##colors", ImVec2(0, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar);
             ImGui::PushItemWidth(-160);
             for (int i = 0; i < RenderCol_Count; i++)
             {
@@ -9809,7 +9809,7 @@ void GLCanvas3D::_render_imgui_select_plate_toolbar()
         auto button_pos = ImGui::GetCursorPos();
         ImGui::SetCursorPos(button_pos + margin);
 
-        ImGui::Image(item->texture_id, size, uv0, uv1, tint_col);
+        ImGui::ImageWithBg(item->texture_id, size, uv0, uv1, ImVec4(0, 0, 0, 0), tint_col);
 
         ImGui::SetCursorPos(button_pos);
 
@@ -10148,7 +10148,7 @@ void GLCanvas3D::_render_canvas_toolbar()
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing    , ImVec2(0.f, 8.f ) * sc);
 
     if (ImGui::BeginPopup("CanvasToolbarMenu")) {
-        ImGui::PushItemFlag(ImGuiItemFlags_SelectableDontClosePopup, true);
+        ImGui::PushItemFlag(ImGuiItemFlags_AutoClosePopups, false);
 
         Plater*    p   = wxGetApp().plater();
         AppConfig* cfg = wxGetApp().app_config;

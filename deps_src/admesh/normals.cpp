@@ -44,11 +44,11 @@ static void reverse_facet(stl_file *stl, int facet_num)
 	stl->facet_start[facet_num].vertex[1] = tmp_vertex;
 
 	// fix the vnots of the neighboring facets
-	if (neighbor[0] != -1)
+	if (neighbor[0] >= 0 && size_t(neighbor[0]) < stl->neighbors_start.size())
 		stl->neighbors_start[neighbor[0]].which_vertex_not[(vnot[0] + 1) % 3] = (stl->neighbors_start[neighbor[0]].which_vertex_not[(vnot[0] + 1) % 3] + 3) % 6;
-	if (neighbor[1] != -1)
+	if (neighbor[1] >= 0 && size_t(neighbor[1]) < stl->neighbors_start.size())
 		stl->neighbors_start[neighbor[1]].which_vertex_not[(vnot[1] + 1) % 3] = (stl->neighbors_start[neighbor[1]].which_vertex_not[(vnot[1] + 1) % 3] + 4) % 6;
-	if (neighbor[2] != -1)
+	if (neighbor[2] >= 0 && size_t(neighbor[2]) < stl->neighbors_start.size())
 		stl->neighbors_start[neighbor[2]].which_vertex_not[(vnot[2] + 1) % 3] = (stl->neighbors_start[neighbor[2]].which_vertex_not[(vnot[2] + 1) % 3] + 2) % 6;
 
 	// swap the neighbors of the facet that is being reversed
@@ -156,7 +156,8 @@ void stl_fix_normal_directions(stl_file *stl)
       		// Reverse the neighboring facets if necessary.
       		if (stl->neighbors_start[facet_num].which_vertex_not[j] > 2) {
         		// If the facet has a neighbor that is -1, it means that edge isn't shared by another facet
-        		if (stl->neighbors_start[facet_num].neighbor[j] != -1) {
+        		if (stl->neighbors_start[facet_num].neighbor[j] >= 0 &&
+                    size_t(stl->neighbors_start[facet_num].neighbor[j]) < norm_sw.size()) {
             		if (norm_sw[stl->neighbors_start[facet_num].neighbor[j]] == 1) {
                 		// trying to modify a facet already marked as fixed, revert all changes made until now and exit (fixes: #716, #574, #413, #269, #262, #259, #230, #228, #206)
                 		for (int id = int(reversed_ids.size()) - 1; id >= 0; -- id)
@@ -169,7 +170,8 @@ void stl_fix_normal_directions(stl_file *stl)
         		}
       		}
       		// If this edge of the facet is connected:
-      		if (stl->neighbors_start[facet_num].neighbor[j] != -1) {
+      		if (stl->neighbors_start[facet_num].neighbor[j] >= 0 &&
+                    size_t(stl->neighbors_start[facet_num].neighbor[j]) < norm_sw.size()) {
         		// If we haven't fixed this facet yet, add it to the list:
         		if (norm_sw[stl->neighbors_start[facet_num].neighbor[j]] != 1) {
 	          		// Add node to beginning of list.

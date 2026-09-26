@@ -10,11 +10,7 @@
 #include "clipper2/clipper.h"
 #include "clipper2/clipper.rectclip.h"
 
-#ifdef USINGZ
-namespace Clipper2Lib_Z {
-#else
 namespace Clipper2Lib {
-#endif
 
   //------------------------------------------------------------------------------
   // Miscellaneous methods

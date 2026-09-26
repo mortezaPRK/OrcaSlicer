@@ -198,7 +198,7 @@ bool SketchInlineEditor::render(ImGuiWrapper& imgui, float scale)
     // must not happen inside this frame's window.
     if (entered)
         do_commit();
-    else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape)))
+    else if (ImGui::IsKeyPressed(ImGuiKey_Escape))
         do_cancel();
     return true;
 }

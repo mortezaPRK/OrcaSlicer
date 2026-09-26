@@ -1,5 +1,6 @@
-** hidapi is a c++ library for communicating with USB and Bluetooth HID devices on Linux, Mac and Windows.**
+# HIDAPI
 
-For more information go to https://github.com/libusb/hidapi
+Vendored from [hidapi-0.15.0](https://github.com/libusb/hidapi/tree/hidapi-0.15.0).
 
-THIS DIRECTORY CONTAINS THE hidapi-0.9.0 7da5cc9 SOURCE DISTRIBUTION.
+The Linux backend retains OrcaSlicer’s runtime libudev loader to support both
+libudev.so.0 and libudev.so.1 without a link-time dependency.

@@ -1,0 +1,14 @@
+diff --git a/build/cmake/lib/expat.cmake b/build/cmake/lib/expat.cmake
+--- a/build/cmake/lib/expat.cmake
++++ b/build/cmake/lib/expat.cmake
+@@ -14,6 +14,10 @@ if(wxUSE_EXPAT STREQUAL "sys")
+         # If the sys library can not be found use builtin
+         wx_option_force_value(wxUSE_EXPAT builtin)
+     endif()
++    if(TARGET EXPAT::EXPAT)
++        # Carry XML_STATIC when linking a static Expat on Windows.
++        set(EXPAT_LIBRARIES EXPAT::EXPAT)
++    endif()
+ endif()
+ 
+ if(wxUSE_EXPAT STREQUAL "builtin")

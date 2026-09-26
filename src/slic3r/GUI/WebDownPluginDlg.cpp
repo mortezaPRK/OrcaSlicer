@@ -211,7 +211,7 @@ void DownPluginFrame::OnScriptMessage(wxWebViewEvent &evt)
         wxString strInput = evt.GetString();
         json     j        = json::parse(strInput.utf8_string());
 
-        wxString strCmd = j["command"];
+        wxString strCmd = wxString::FromUTF8(j["command"].get<std::string>());
 
         if (strCmd == "Begin_Download_network_plugin") {
             wxGetApp().CallAfter([this] { DownloadPlugin(); });

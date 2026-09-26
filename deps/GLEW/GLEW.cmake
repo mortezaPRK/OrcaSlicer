@@ -5,6 +5,7 @@ find_package(OpenGL QUIET REQUIRED)
 orcaslicer_add_cmake_project(
   GLEW
   SOURCE_DIR  ${CMAKE_CURRENT_LIST_DIR}/glew
+  BUILD_ALWAYS ON
   CMAKE_ARGS
     -DGLEW_USE_EGL=OFF
 )

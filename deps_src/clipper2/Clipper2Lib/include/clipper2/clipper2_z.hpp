@@ -9,9 +9,12 @@
 
 // Enable the Z coordinate support.
 #define USINGZ
+// Keep the Z-enabled API separate without modifying upstream headers.
+#define Clipper2Lib Clipper2Lib_Z
 
 #include "clipper.h"
 
 #undef CLIPPER_H
+#undef Clipper2Lib
 #undef USINGZ
 #endif // clipper2_z_hpp

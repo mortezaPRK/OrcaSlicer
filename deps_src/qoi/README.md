@@ -1,4 +1,4 @@
-Bundled with PrusaSlicer: commit 6c0831f91ffde5dfe2ceef32cbaff91d62b0e0ee
+Bundled upstream: phoboslab/qoi commit 97bacc86a9c4abf5a2d452102dc26546c4c670b9; retains the four-channel pixel-copy optimization.
 Original README follows:
 
 

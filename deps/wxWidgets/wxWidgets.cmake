@@ -17,14 +17,19 @@ endif()
 
 if (MSVC)
     set(_wx_edge "-DwxUSE_WEBVIEW_EDGE=ON")
+    set(_wx_expat_static "-DEXPAT_USE_STATIC_LIBS=ON")
 else ()
     set(_wx_edge "-DwxUSE_WEBVIEW_EDGE=OFF")
 endif ()
 
-set(_wx_patch_command "")
+set(_wx_patch_command
+    ${GIT_EXECUTABLE} checkout -f -- build/cmake/lib/expat.cmake
+    COMMAND ${GIT_EXECUTABLE} apply --verbose
+            ${CMAKE_CURRENT_LIST_DIR}/0002-use-expat-imported-target.patch
+)
 if (APPLE)
-    set(_wx_patch_command
-        ${GIT_EXECUTABLE} checkout -f -- src/osx/cocoa/colour.mm
+    list(APPEND _wx_patch_command
+        COMMAND ${GIT_EXECUTABLE} checkout -f -- src/osx/cocoa/colour.mm
         COMMAND ${GIT_EXECUTABLE} apply --verbose
                 ${CMAKE_CURRENT_LIST_DIR}/0001-macos-use-srgb-colour-components.patch
     )
@@ -65,6 +70,7 @@ orcaslicer_add_cmake_project(
         -DwxUSE_LIBTIFF=OFF
         -DwxUSE_LIBWEBP=builtin
         -DwxUSE_EXPAT=sys
+        ${_wx_expat_static}
         -DwxUSE_NANOSVG=OFF
 )
 

@@ -1,8 +1,8 @@
 set(_curl_platform_flags 
   -DENABLE_IPV6:BOOL=ON
-  -DENABLE_VERSIONED_SYMBOLS:BOOL=ON
+  -DCURL_LIBCURL_VERSIONED_SYMBOLS:BOOL=ON
   -DENABLE_THREADED_RESOLVER:BOOL=ON
-  -DENABLE_MANUAL:BOOL=OFF
+  -DENABLE_CURL_MANUAL:BOOL=OFF
   -DCURL_DISABLE_LDAP:BOOL=ON
   -DCURL_DISABLE_LDAPS:BOOL=ON
   -DCURL_DISABLE_RTSP:BOOL=ON
@@ -17,23 +17,25 @@ set(_curl_platform_flags
   -DCURL_DISABLE_MQTT:BOOL=ON
   #-DHTTP_ONLY=ON
 
-  -DCMAKE_USE_GSSAPI:BOOL=OFF
-  -DCMAKE_USE_LIBSSH2:BOOL=OFF
-  -DUSE_RTMP:BOOL=OFF
+  -DCURL_USE_GSSAPI:BOOL=OFF
+  -DCURL_USE_LIBSSH2:BOOL=OFF
+  -DCURL_BROTLI:BOOL=OFF
+  -DCURL_ZSTD:BOOL=OFF
+  -DUSE_LIBIDN2:BOOL=OFF
   -DUSE_NGHTTP2:BOOL=OFF
-  -DUSE_MBEDTLS:BOOL=OFF
+  -DCURL_USE_MBEDTLS:BOOL=OFF
 )
 
 if (WIN32)
   #set(_curl_platform_flags  ${_curl_platform_flags} -DCMAKE_USE_SCHANNEL=ON)
-  set(_curl_platform_flags  ${_curl_platform_flags} -DCMAKE_USE_OPENSSL=ON -DCURL_CA_PATH:STRING=none)
+  set(_curl_platform_flags  ${_curl_platform_flags} -DCURL_USE_OPENSSL=ON -DCURL_CA_PATH:STRING=none)
 elseif (APPLE)
   set(_curl_platform_flags 
     
     ${_curl_platform_flags}
 
     #-DCMAKE_USE_SECTRANSP:BOOL=ON 
-    -DCMAKE_USE_OPENSSL:BOOL=ON
+    -DCURL_USE_OPENSSL:BOOL=ON
 
     -DCURL_CA_PATH:STRING=none
   )
@@ -42,7 +44,7 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 
     ${_curl_platform_flags}
 
-    -DCMAKE_USE_OPENSSL:BOOL=ON
+    -DCURL_USE_OPENSSL:BOOL=ON
 
     -DCURL_CA_PATH:STRING=none
     -DCURL_CA_BUNDLE:STRING=none
@@ -80,7 +82,7 @@ orcaslicer_add_cmake_project(CURL
     -DBUILD_CURL_EXE:BOOL=OFF
     -DCURL_USE_LIBPSL:BOOL=OFF
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-    -DCURL_STATICLIB=${_curl_static}
+    -DBUILD_STATIC_LIBS=${_curl_static}
     "${_curl_c_flags_line}"
     ${_curl_probe_overrides}
     ${_curl_platform_flags}

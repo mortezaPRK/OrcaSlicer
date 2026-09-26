@@ -22,10 +22,15 @@
 #endif
 
 #include <objbase.h>
+
 #include <wrl/implements.h>
 
+#include <algorithm>
+#include <limits>
+#include <string>
+
 #include "WebView2.h"
-#define CORE_WEBVIEW_TARGET_PRODUCT_VERSION L"138.0.3351.48"
+#define CORE_WEBVIEW_TARGET_PRODUCT_VERSION L"152.0.4191.47"
 
 #define COREWEBVIEW2ENVIRONMENTOPTIONS_STRING_PROPERTY(p)     \
  public:                                                      \
@@ -63,49 +68,52 @@
  protected:                                                      \
   BOOL m_##p = defPVal ? TRUE : FALSE;
 
-#define DEFINE_AUTO_COMEM_STRING()                                      \
- protected:                                                             \
-  class AutoCoMemString {                                               \
-   public:                                                              \
-    AutoCoMemString() {}                                                \
-    ~AutoCoMemString() { Release(); }                                   \
-    void Release() {                                                    \
-      if (m_string) {                                                   \
-        deallocate_fn(m_string);                                        \
-        m_string = nullptr;                                             \
-      }                                                                 \
-    }                                                                   \
-                                                                        \
-    LPCWSTR Set(LPCWSTR str) {                                          \
-      Release();                                                        \
-      if (str) {                                                        \
-        m_string = MakeCoMemString(str);                                \
-      }                                                                 \
-      return m_string;                                                  \
-    }                                                                   \
-    LPCWSTR Get() { return m_string; }                                  \
-    LPWSTR Copy() {                                                     \
-      if (m_string)                                                     \
-        return MakeCoMemString(m_string);                               \
-      return nullptr;                                                   \
-    }                                                                   \
-                                                                        \
-   protected:                                                           \
-    LPWSTR MakeCoMemString(LPCWSTR source) {                            \
-      const size_t length = wcslen(source);                             \
-      const size_t bytes = (length + 1) * sizeof(*source);              \
-                                                                        \
-      if (bytes <= length) {                                            \
-        return nullptr;                                                 \
-      }                                                                 \
-                                                                        \
-      wchar_t* result = reinterpret_cast<wchar_t*>(allocate_fn(bytes)); \
-                                                                        \
-      if (result)                                                       \
-        memcpy(result, source, bytes);                                  \
-      return result;                                                    \
-    }                                                                   \
-    LPWSTR m_string = nullptr;                                          \
+#define DEFINE_AUTO_COMEM_STRING()                                            \
+ protected:                                                                   \
+  class AutoCoMemString {                                                     \
+   public:                                                                    \
+    AutoCoMemString() {}                                                      \
+    ~AutoCoMemString() {                                                      \
+      Release();                                                              \
+    }                                                                         \
+    void Release() {                                                          \
+      if (m_string) {                                                         \
+        deallocate_fn(m_string);                                              \
+        m_string = nullptr;                                                   \
+      }                                                                       \
+    }                                                                         \
+                                                                              \
+    LPCWSTR Set(LPCWSTR str) {                                                \
+      Release();                                                              \
+      if (str) {                                                              \
+        m_string = MakeCoMemString(str);                                      \
+      }                                                                       \
+      return m_string;                                                        \
+    }                                                                         \
+    LPCWSTR Get() {                                                           \
+      return m_string;                                                        \
+    }                                                                         \
+    LPWSTR Copy() {                                                           \
+      if (m_string)                                                           \
+        return MakeCoMemString(m_string);                                     \
+      return nullptr;                                                         \
+    }                                                                         \
+                                                                              \
+   protected:                                                                 \
+    LPWSTR MakeCoMemString(LPCWSTR source) {                                  \
+      const size_t length = wcslen(source);                                   \
+      if (length >= (std::numeric_limits<size_t>::max)() / sizeof(*source)) { \
+        return nullptr;                                                       \
+      }                                                                       \
+                                                                              \
+      const size_t bytes = (length + 1) * sizeof(*source);                    \
+      wchar_t* result = reinterpret_cast<wchar_t*>(allocate_fn(bytes));       \
+                                                                              \
+      if (result)                                                             \
+        std::char_traits<wchar_t>::copy(result, source, length + 1);          \
+      return result;                                                          \
+    }                                                                         \
+    LPWSTR m_string = nullptr;                                                \
   };
 
 template <typename allocate_fn_t,
@@ -150,7 +158,8 @@ class CoreWebView2CustomSchemeRegistrationBase
       if (!(*allowedOrigins)) {
         return HRESULT_FROM_WIN32(GetLastError());
       }
-      ZeroMemory(*allowedOrigins, m_allowedOriginsCount * sizeof(LPWSTR));
+      std::fill_n((*allowedOrigins), m_allowedOriginsCount,
+                  static_cast<LPWSTR>(nullptr));
       for (UINT32 i = 0; i < m_allowedOriginsCount; i++) {
         UNSAFE_BUFFERS((*allowedOrigins)[i] = m_allowedOrigins[i].Copy();
                        if (!(*allowedOrigins)[i]) {
@@ -239,12 +248,10 @@ class CoreWebView2EnvironmentOptionsBase
           ICoreWebView2EnvironmentOptions7,
           ICoreWebView2EnvironmentOptions8> {
  public:
-  static const COREWEBVIEW2_RELEASE_CHANNELS kInternalChannel =
-      static_cast<COREWEBVIEW2_RELEASE_CHANNELS>(1 << 4);
   static const COREWEBVIEW2_RELEASE_CHANNELS kAllChannels =
       COREWEBVIEW2_RELEASE_CHANNELS_STABLE |
       COREWEBVIEW2_RELEASE_CHANNELS_BETA | COREWEBVIEW2_RELEASE_CHANNELS_DEV |
-      COREWEBVIEW2_RELEASE_CHANNELS_CANARY | kInternalChannel;
+      COREWEBVIEW2_RELEASE_CHANNELS_CANARY;
 
   CoreWebView2EnvironmentOptionsBase() {
     // Initialize the target compatible browser version value to the version

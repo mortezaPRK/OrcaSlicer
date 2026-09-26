@@ -31,13 +31,8 @@ if (APPLE AND IS_CROSS_COMPILE)
     )
 else()
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    set(_patch_cmd "")
-elseif (MSVC AND "${DEPS_ARCH}" STREQUAL "arm64")
-    set(_patch_cmd "")
-else ()
-    set(_patch_cmd "")
-endif ()
+set(_patch_cmd ${CMAKE_COMMAND} -P
+    ${CMAKE_CURRENT_LIST_DIR}/patch_openexr_arm64.cmake)
 
 orcaslicer_add_cmake_project(OpenEXR
     # GIT_REPOSITORY https://github.com/openexr/openexr.git

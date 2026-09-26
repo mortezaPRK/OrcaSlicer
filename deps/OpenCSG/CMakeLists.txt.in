@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.13)
 
 project(OpenCSG)
 
@@ -61,7 +61,7 @@ include(GNUInstallDirs)
 
 write_basic_package_version_file(
     "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"     
-    VERSION 1.4.2
+    VERSION 1.8.2
     COMPATIBILITY AnyNewerVersion
 )
 

@@ -2095,7 +2095,7 @@ std::string handle_on_main(const std::string& method, const json& params, const 
         if (method == "mate")          return rpc_result(id, action_mate(panel, params));
         if (method == "check_interference") return rpc_result(id, action_check_interference(panel, params));
         return rpc_error(id, -32601, "Unknown method: " + method);
-    } catch (const Standard_Failure& ex) {   // OCCT errors are NOT std::exception
+    } catch (const Standard_Failure& ex) {
         return rpc_error(id, -32000, std::string("OCCT: ") + (ex.GetMessageString() ? ex.GetMessageString() : "failure"));
     } catch (const std::exception& ex) {
         return rpc_error(id, -32000, ex.what());

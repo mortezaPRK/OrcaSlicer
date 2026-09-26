@@ -101,7 +101,7 @@ void PrinterCloudAuthDialog::OnScriptMessage(wxWebViewEvent& evt)
     wxString str_input = evt.GetString();
     try {
         json     j      = json::parse(into_u8(str_input));
-        wxString strCmd = j["command"];
+        wxString strCmd = wxString::FromUTF8(j["command"].get<std::string>());
         if (strCmd == "login_token") {
             auto token = j["data"]["token"];
             m_apikey = token;

@@ -13,11 +13,8 @@
 #include "clipper2/clipper.core.h"
 #include <queue>
 
-#ifdef USINGZ
-namespace Clipper2Lib_Z {
-#else
-namespace Clipper2Lib {
-#endif
+namespace Clipper2Lib
+{
 
   // Location: the order is important here, see StartLocsIsClockwise()
   enum class Location { Left, Top, Right, Bottom, Inside };

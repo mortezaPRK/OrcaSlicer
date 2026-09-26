@@ -490,9 +490,7 @@ ImFont *StyleManager::create_imgui_font(const std::string &text, double scale)
     int unit_per_em = get_font_info(font_file, font_prop).unit_per_em;
     float coef = font_size / (double) unit_per_em;
     if (font_prop.char_gap.has_value())
-        font_config.GlyphExtraSpacing.x = coef * (*font_prop.char_gap);    
-    if (font_prop.line_gap.has_value())
-        font_config.GlyphExtraSpacing.y = coef * (*font_prop.line_gap);    
+        font_config.GlyphExtraAdvanceX = coef * (*font_prop.char_gap);
 
     font_config.FontDataOwnedByAtlas = false;
 
@@ -523,7 +521,7 @@ ImFont *StyleManager::create_imgui_font(const std::string &text, double scale)
         glsafe(::glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels));
 
     // Store our identifier
-    m_style_cache.atlas.TexID = (ImTextureID) (intptr_t) font_texture;
+    m_style_cache.atlas.SetTexID((ImTextureID) (intptr_t) font_texture);
     assert(!m_style_cache.atlas.Fonts.empty());
     if (m_style_cache.atlas.Fonts.empty()) return nullptr;
     assert(font == m_style_cache.atlas.Fonts.back());

@@ -14,11 +14,7 @@
 #include "clipper.engine.h"
 #include <optional>
 
-#ifdef USINGZ
-namespace Clipper2Lib_Z {
-#else
 namespace Clipper2Lib {
-#endif
 
 enum class JoinType { Square, Bevel, Round, Miter };
 //Square : Joins are 'squared' at exactly the offset distance (more complex code)

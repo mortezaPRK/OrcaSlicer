@@ -983,8 +983,8 @@ void GLGizmoText::on_render_input_window(float x, float y, float bottom_limit)
     ImFontAtlas* atlas = io.Fonts;
     ImVec4 tint_col = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
     ImVec4 border_col = ImVec4(0.0f, 0.0f, 0.0f, 0.8f);
-    m_imgui->text(wxString("") << atlas->TexWidth << " * " << atlas->TexHeight);
-    ImGui::Image(atlas->TexID, ImVec2((float)atlas->TexWidth, (float)atlas->TexHeight), ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), tint_col, border_col);
+    m_imgui->text(wxString("") << atlas->TexData->Width << " * " << atlas->TexData->Height);
+    ImGui::Image(atlas->TexID, ImVec2((float)atlas->TexData->Width, (float)atlas->TexData->Height), ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), tint_col, border_col);
 #endif
 
     GizmoImguiEnd();

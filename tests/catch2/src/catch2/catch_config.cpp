@@ -89,7 +89,12 @@ namespace Catch {
         return lhs.name == rhs.name &&
                lhs.outputFilename == rhs.outputFilename &&
                lhs.colourMode == rhs.colourMode &&
+               lhs.verbosity == rhs.verbosity &&
                lhs.customOptions == rhs.customOptions;
+    }
+
+    bool operator==( PathFilter const& lhs, PathFilter const& rhs ) {
+        return lhs.type == rhs.type && lhs.filter == rhs.filter;
     }
 
     Config::Config( ConfigData const& data ):
@@ -99,9 +104,6 @@ namespace Catch {
         // aligned with whitespace).
 
         for (auto& elem : m_data.testsOrTags) {
-            elem = trim(elem);
-        }
-        for (auto& elem : m_data.sectionsToRun) {
             elem = trim(elem);
         }
 
@@ -156,6 +158,7 @@ namespace Catch {
                 reporterSpec.outputFile() ? *reporterSpec.outputFile()
                                           : data.defaultOutputFilename,
                 reporterSpec.colourMode().valueOr( data.defaultColourMode ),
+                reporterSpec.verbosity().valueOr( data.verbosity ),
                 reporterSpec.customOptions() } );
         }
     }
@@ -169,7 +172,8 @@ namespace Catch {
     bool Config::listListeners() const      { return m_data.listListeners; }
 
     std::vector<std::string> const& Config::getTestsOrTags() const { return m_data.testsOrTags; }
-    std::vector<std::string> const& Config::getSectionsToRun() const { return m_data.sectionsToRun; }
+    std::vector<PathFilter> const& Config::getPathFilters() const { return m_data.pathFilters; }
+    bool Config::useNewFilterBehaviour() const { return m_data.useNewPathFilteringBehaviour; }
 
     std::vector<ReporterSpec> const& Config::getReporterSpecs() const {
         return m_data.reporterSpecifications;
@@ -197,11 +201,15 @@ namespace Catch {
     bool Config::warnAboutUnmatchedTestSpecs() const {
         return !!( m_data.warnings & WarnAbout::UnmatchedTestSpec );
     }
+    bool Config::warnAboutInfiniteGenerators() const {
+        return !!( m_data.warnings & WarnAbout::InfiniteGenerator );
+    }
     bool Config::zeroTestsCountAsSuccess() const       { return m_data.allowZeroTests; }
     ShowDurations Config::showDurations() const        { return m_data.showDurations; }
     double Config::minDuration() const                 { return m_data.minDuration; }
     TestRunOrder Config::runOrder() const              { return m_data.runOrder; }
     uint32_t Config::rngSeed() const                   { return m_data.rngSeed; }
+    bool Config::rngSeedWasFixed() const               { return m_data.rngSeedWasFixed; }
     unsigned int Config::shardCount() const            { return m_data.shardCount; }
     unsigned int Config::shardIndex() const            { return m_data.shardIndex; }
     ColourMode Config::defaultColourMode() const       { return m_data.defaultColourMode; }
@@ -227,7 +235,7 @@ namespace Catch {
 
         if ( bazelOutputFile ) {
             m_data.reporterSpecifications.push_back(
-                { "junit", std::string( bazelOutputFile ), {}, {} } );
+                { "junit", std::string( bazelOutputFile ), {}, {}, {} } );
         }
 
         const auto bazelTestSpec = Detail::getEnv( "TESTBRIDGE_TEST_ONLY" );
@@ -266,6 +274,7 @@ namespace Catch {
                     << bazelRandomSeed << "') as proper seed.\n";
             } else {
                 m_data.rngSeed = *parsedSeed;
+                m_data.rngSeedWasFixed = true;
             }
         }
     }

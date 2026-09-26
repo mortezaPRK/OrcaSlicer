@@ -181,6 +181,8 @@ TopoDS_Wire SketchProfile::to_occt_wire(const SketchPlane& plane) const
 
 static TopoDS_Shape extrude_face_internal(const TopoDS_Face& face, const gp_Dir& dir, double length, bool symmetric)
 {
+    // OCCT 8 accepts a zero prism vector, but it cannot produce a solid.
+    if (length == 0.0) throw std::runtime_error("Extrude depth must be nonzero");
     gp_Vec vec = gp_Vec(dir) * length;
     if (symmetric) {
         gp_Vec halfVec = gp_Vec(dir) * (length / 2.0);
@@ -240,8 +242,7 @@ TopoDS_Shape SketchEngine::make_extrude_taper(const TopoDS_Wire& wire, const Ske
     gp_Dir dir(plane.normal.x(), plane.normal.y(), plane.normal.z());
     auto straight = [&]() -> TopoDS_Shape {
         BRepBuilderAPI_MakeFace fm(wire);
-        BRepPrimAPI_MakePrism prism(fm.Face(), gp_Vec(dir) * length);
-        return prism.Shape();
+        return extrude_face_internal(fm.Face(), dir, length, false);
     };
     if (std::abs(taper_deg) >= 89.0 || std::abs(length) < 1e-9) return straight();
     const double off = length * std::tan(taper_deg * M_PI / 180.0);

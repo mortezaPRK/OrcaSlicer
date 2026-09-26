@@ -5490,7 +5490,7 @@ void GUI_App::handle_script_message(std::string msg, const std::string& provider
     try {
         json j = json::parse(msg);
         if (j.contains("command")) {
-            wxString cmd = j["command"];
+            wxString cmd = wxString::FromUTF8(j["command"].get<std::string>());
             if (cmd == "user_login") {
                 if (m_agent) {
                     m_agent->change_user(j.dump(), provider);

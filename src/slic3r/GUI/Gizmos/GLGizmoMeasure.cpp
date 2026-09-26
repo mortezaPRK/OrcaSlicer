@@ -1413,9 +1413,9 @@ void GLGizmoMeasure::render_dimensioning()
             }
 
             // handle keys input
-            if (ImGui::IsKeyPressedMap(ImGuiKey_Enter) || ImGui::IsKeyPressedMap(ImGuiKey_KeyPadEnter))
+            if (ImGui::IsKeyPressed(ImGuiKey_Enter) || ImGui::IsKeyPressed(ImGuiKey_KeypadEnter))
                 action_scale(edit_value, curr_value, false);
-            else if (ImGui::IsKeyPressedMap(ImGuiKey_Escape))
+            else if (ImGui::IsKeyPressed(ImGuiKey_Escape))
                 action_exit();
 
             ImGui::SameLine();

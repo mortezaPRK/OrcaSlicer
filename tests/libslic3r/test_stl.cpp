@@ -58,3 +58,25 @@ SCENARIO("Reading an STL file", "[stl]") {
 		}
 	}
 }
+
+TEST_CASE("Normal repair ignores out-of-range facet neighbors", "[Stl][Regression]")
+{
+    const int neighbor = GENERATE(-2, 1, 1000000);
+    const bool reversed = GENERATE(false, true);
+    stl_file mesh;
+    mesh.stats.number_of_facets = 1;
+    mesh.facet_start.resize(1);
+    mesh.neighbors_start.resize(1);
+    auto &facet = mesh.facet_start.front();
+    facet.vertex[0] = stl_vertex(0, 0, 0);
+    facet.vertex[1] = stl_vertex(1, 0, 0);
+    facet.vertex[2] = stl_vertex(0, 1, 0);
+    facet.normal = stl_normal(0, 0, reversed ? -1 : 1);
+    mesh.neighbors_start[0].neighbor[0] = neighbor;
+    mesh.neighbors_start[0].which_vertex_not[0] = 3;
+
+    stl_fix_normal_directions(&mesh);
+
+    REQUIRE(mesh.stats.number_of_parts == 1);
+    REQUIRE(mesh.facet_start.size() == 1);
+}

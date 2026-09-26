@@ -19,11 +19,8 @@
 #include <numeric>
 #include <cmath>
 
-#ifdef USINGZ
-namespace Clipper2Lib_Z {
-#else
-namespace Clipper2Lib {
-#endif
+namespace Clipper2Lib
+{
 
 #if (defined(__cpp_exceptions) && __cpp_exceptions) || (defined(__EXCEPTIONS) && __EXCEPTIONS)
 

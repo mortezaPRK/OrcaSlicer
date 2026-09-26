@@ -27,7 +27,7 @@ target_link_libraries(your_target PRIVATE hints)
 ### 3. **stb_dxt** (Interface Library)
 - **Type**: Interface library (header-only)
 - **Target**: `stb_dxt` or `stb_dxt::stb_dxt`
-- **Headers**: `stb_dxt.h`
+- **Headers**: `stb_dxt.h`, `ryg_dxt.h` (whole-image compression)
 - **Usage**:
 ```cmake
 target_link_libraries(your_target PRIVATE stb_dxt)

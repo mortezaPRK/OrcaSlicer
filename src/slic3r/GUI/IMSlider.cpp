@@ -555,7 +555,7 @@ bool IMSlider::horizontal_slider(const char* str_id, int* value, int v_min, int 
     const float mid_y = groove.GetCenter().y;
 
     // set mouse active region. active region.
-    bool slider_hovered = ImGui::ItemHoverable(draw_region, id);
+    bool slider_hovered = ImGui::ItemHoverable(draw_region, id, ImGuiItemFlags_None);
     if (slider_hovered && context.IO.MouseDown[0]) {
         ImGui::SetActiveID(id, window);
         ImGui::SetFocusID(id, window);
@@ -1035,7 +1035,7 @@ bool IMSlider::vertical_slider(const char* str_id, int* higher_value, int* lower
 
     // set mouse active region
     const ImRect slider_active_region = ImRect(ImVec2(draw_region.Min.x + 35.0f * m_scale, draw_region.Min.y), draw_region.Max);
-    bool slider_hovered = !menu_open && ImGui::ItemHoverable(slider_active_region, id) && !ImGui::ItemHoverable(m_tick_rect, id) && hovered_label == ssUndef;
+    bool slider_hovered = !menu_open && ImGui::ItemHoverable(slider_active_region, id, ImGuiItemFlags_None) && !ImGui::ItemHoverable(m_tick_rect, id, ImGuiItemFlags_None) && hovered_label == ssUndef;
     struct LabelDragState
     {
         ImGuiID        id = 0;
@@ -1073,10 +1073,10 @@ bool IMSlider::vertical_slider(const char* str_id, int* higher_value, int* lower
     {
         const SelectedSlider dragged_label = label_drag.id == id && context.IO.MouseDown[0] ? label_drag.selection : ssUndef;
         if (dragged_label == ssUndef && !menu_open) {
-            if (ImGui::ItemHoverable(higher_handle, id) && context.IO.MouseClicked[0]) {
+            if (ImGui::ItemHoverable(higher_handle, id, ImGuiItemFlags_None) && context.IO.MouseClicked[0]) {
                 selection = ssHigher;
             }
-            if (ImGui::ItemHoverable(lower_handle, id) && context.IO.MouseClicked[0]) {
+            if (ImGui::ItemHoverable(lower_handle, id, ImGuiItemFlags_None) && context.IO.MouseClicked[0]) {
                 selection = ssLower;
             }
         }
@@ -1143,9 +1143,9 @@ bool IMSlider::vertical_slider(const char* str_id, int* higher_value, int* lower
         }
 
         // judge whether to open menu
-        if (!menu_open && ImGui::ItemHoverable(h_selected ? higher_handle : lower_handle, id) && context.IO.MouseClicked[1])
+        if (!menu_open && ImGui::ItemHoverable(h_selected ? higher_handle : lower_handle, id, ImGuiItemFlags_None) && context.IO.MouseClicked[1])
             m_show_menu = true;
-        if (!menu_open && ((!ImGui::ItemHoverable(h_selected ? higher_handle : lower_handle, id) && context.IO.MouseClicked[1]) ||
+        if (!menu_open && ((!ImGui::ItemHoverable(h_selected ? higher_handle : lower_handle, id, ImGuiItemFlags_None) && context.IO.MouseClicked[1]) ||
             context.IO.MouseClicked[0]))
             m_show_menu = false;
 
@@ -1210,9 +1210,9 @@ bool IMSlider::vertical_slider(const char* str_id, int* higher_value, int* lower
         ImVec2 handle_center = one_handle.GetCenter();
 
         // judge whether to open menu
-        if (!menu_open && ImGui::ItemHoverable(one_handle, id) && context.IO.MouseClicked[1])
+        if (!menu_open && ImGui::ItemHoverable(one_handle, id, ImGuiItemFlags_None) && context.IO.MouseClicked[1])
             m_show_menu = true;
-        if (!menu_open && ((!ImGui::ItemHoverable(one_handle, id) && context.IO.MouseClicked[1]) ||
+        if (!menu_open && ((!ImGui::ItemHoverable(one_handle, id, ImGuiItemFlags_None) && context.IO.MouseClicked[1]) ||
             context.IO.MouseClicked[0]))
             m_show_menu = false;
 
@@ -1383,7 +1383,7 @@ void IMSlider::render_input_custom_gcode(std::string custom_gcode)
 
         ImGui::SameLine();
         imgui.push_cancel_button_style();
-        if (imgui.bbl_button(_L("Cancel")) || ImGui::IsKeyDown(ImGui::GetKeyIndex(ImGuiKey_Escape))) {
+        if (imgui.bbl_button(_L("Cancel")) || ImGui::IsKeyDown(ImGuiKey_Escape)) {
             m_show_custom_gcode_window = false;
             ImGui::CloseCurrentPopup();
             set_focus = true;
@@ -1454,7 +1454,7 @@ void IMSlider::render_go_to_layer_dialog()
             ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
             imgui.push_button_disable_style();
         }
-        if (imgui.bbl_button(_L("OK")) || (!disable_button && ImGui::IsKeyDown(ImGui::GetKeyIndex(ImGuiKey_Enter)))) {
+        if (imgui.bbl_button(_L("OK")) || (!disable_button && ImGui::IsKeyDown(ImGuiKey_Enter))) {
             do_go_to_layer(atoi(m_layer_number) - 1);
             m_show_go_to_layer_dialog = false;
             ImGui::CloseCurrentPopup();
@@ -1468,7 +1468,7 @@ void IMSlider::render_go_to_layer_dialog()
 
         ImGui::SameLine();
         imgui.push_cancel_button_style();
-        if (imgui.bbl_button(_L("Cancel")) || ImGui::IsKeyDown(ImGui::GetKeyIndex(ImGuiKey_Escape))) {
+        if (imgui.bbl_button(_L("Cancel")) || ImGui::IsKeyDown(ImGuiKey_Escape)) {
             m_show_go_to_layer_dialog = false;
             ImGui::CloseCurrentPopup();
             set_focus = true;

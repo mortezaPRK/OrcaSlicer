@@ -1304,7 +1304,7 @@ void PartPlate::render_label(GLCanvas3D& canvas) const {
 	imgui.text(label);
 
 	// force re-render while the windows gets to its final size (it takes several frames)
-	if (ImGui::GetWindowContentRegionWidth() + 2.0f * ImGui::GetStyle().WindowPadding.x != ImGui::CalcWindowNextAutoFitSize(ImGui::GetCurrentWindow()).x)
+	if ((ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x) + 2.0f * ImGui::GetStyle().WindowPadding.x != ImGui::CalcWindowNextAutoFitSize(ImGui::GetCurrentWindow()).x)
 		canvas.request_extra_frame();
 
 	imgui.end();

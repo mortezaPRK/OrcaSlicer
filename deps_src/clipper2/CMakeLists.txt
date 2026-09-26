@@ -18,6 +18,8 @@ set(CLIPPER2_INC
   Clipper2Lib/include/clipper2/clipper.export.h
   Clipper2Lib/include/clipper2/clipper.minkowski.h
   Clipper2Lib/include/clipper2/clipper.offset.h
+  Clipper2Lib/include/clipper2/clipper.triangulation.h
+  Clipper2Lib/include/clipper2/clipper.version.h
   Clipper2Lib/include/clipper2/clipper.rectclip.h
   Clipper2Lib/include/clipper2/clipper.triangulation.h
   Clipper2Lib/include/clipper2/clipper2_z.hpp
@@ -26,6 +28,7 @@ set(CLIPPER2_INC
 set(CLIPPER2_SRC
   Clipper2Lib/src/clipper.engine.cpp
   Clipper2Lib/src/clipper.offset.cpp
+  Clipper2Lib/src/clipper.triangulation.cpp
   Clipper2Lib/src/clipper.rectclip.cpp
   Clipper2Lib/src/clipper.triangulation.cpp
   Clipper2Lib/src/clipper2_z.cpp

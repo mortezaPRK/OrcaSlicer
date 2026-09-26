@@ -23,8 +23,8 @@
 #include "../../vertex_triangle_adjacency.h"
 
 #include <CGAL/AABB_tree.h>
-#include <CGAL/AABB_traits.h>
-#include <CGAL/AABB_triangle_primitive.h>
+#include <CGAL/AABB_traits_3.h>
+#include <CGAL/AABB_triangle_primitive_3.h>
 #include <CGAL/intersections.h>
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 
@@ -53,12 +53,12 @@ IGL_INLINE size_t igl::copyleft::cgal::extract_cells(
   using VectorXI = Eigen::Matrix<Index, Eigen::Dynamic, 1>;
   const size_t num_faces = F.rows();
   // Construct edge adjacency
-  MatrixXI E, uE;
-  VectorXI EMAP;
-  VectorXI uEC,uEE;
+  Eigen::MatrixXi E, uE;
+  Eigen::VectorXi EMAP;
+  Eigen::VectorXi uEC,uEE;
   igl::unique_edge_map(F, E, uE, EMAP, uEC, uEE);
   // Cluster into manifold patches
-  VectorXI P;
+  Eigen::VectorXi P;
   igl::extract_manifold_patches(F, EMAP, uEC, uEE, P);
   // Extract cells
   DerivedC per_patch_cells;
@@ -156,9 +156,9 @@ IGL_INLINE size_t igl::copyleft::cgal::extract_cells(
   std::vector<VectorXI> Is(num_components);
   std::vector<
     CGAL::AABB_tree<
-      CGAL::AABB_traits<
+      CGAL::AABB_traits_3<
         Kernel,
-        CGAL::AABB_triangle_primitive<
+        CGAL::AABB_triangle_primitive_3<
           Kernel, std::vector<
             Kernel::Triangle_3 >::iterator > > > > trees(num_components);
   std::vector< std::vector<Kernel::Triangle_3 > >
@@ -170,9 +170,9 @@ IGL_INLINE size_t igl::copyleft::cgal::extract_cells(
   std::vector<std::vector<bool> > in_Is(num_components);
 
   // Find outer facets, their orientations and cells for each component
-  VectorXI outer_facets(num_components);
-  VectorXI outer_facet_orientation(num_components);
-  VectorXI outer_cells(num_components);
+  Eigen::VectorXi outer_facets(num_components);
+  Eigen::VectorXi outer_facet_orientation(num_components);
+  Eigen::VectorXi outer_cells(num_components);
   igl::parallel_for(num_components,[&](size_t i)
   {
     Is[i].resize(components[i].size());
@@ -269,7 +269,7 @@ IGL_INLINE size_t igl::copyleft::cgal::extract_cells(
       const auto& in_I = in_Is[i];
       const auto& triangles = triangle_lists[i];
 
-      VectorXI closest_facets, closest_facet_orientations;
+      Eigen::VectorXi closest_facets, closest_facet_orientations;
       closest_facet(
         V,
         F,

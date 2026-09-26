@@ -1,3 +1,38 @@
+/***************************************************************************
+ *  This file is part of the MCUT project, which is comprised of a library 
+ *  for surface mesh cutting, example programs and test programs.
+ * 
+ *  Copyright (C) 2024 CutDigital Enterprise Ltd
+ *  
+ *  MCUT is dual-licensed software that is available under an Open Source 
+ *  license as well as a commercial license. The Open Source license is the 
+ *  GNU Lesser General Public License v3+ (LGPL). The commercial license 
+ *  option is for users that wish to use MCUT in their products for commercial 
+ *  purposes but do not wish to release their software under the LGPL. 
+ *  Email <contact@cut-digital.com> for further information.
+ *
+ *  You may not use this file except in compliance with the License. A copy of 
+ *  the Open Source license can be obtained from
+ *
+ *      https://www.gnu.org/licenses/lgpl-3.0.en.html.
+ *
+ *  For your convenience, a copy of this License has been included in this
+ *  repository.
+ *
+ *  MCUT is distributed in the hope that it will be useful, but THE SOFTWARE IS 
+ *  PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+ *  INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR 
+ *  A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR 
+ *  COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+ *  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF 
+ *  OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Author(s):
+ *
+ *    Floyd M. Chitalu    CutDigital Enterprise Ltd.
+ *
+ **************************************************************************/
+
 #include "mcut/internal/frontend.h"
 #include "mcut/internal/preproc.h"
 
@@ -8,6 +43,7 @@
 #include <algorithm>
 #include <array>
 #include <fstream>
+#include <stack>
 
 #include <memory>
 
@@ -41,6 +77,10 @@ void create_context_impl(McContext* pOutContext, McFlags flags, uint32_t helperT
     std::call_once(g_objects_counter_init_flag, []() { g_objects_counter.store(0xDECAF); /*any non-ero value*/ });
 
     const McContext handle = reinterpret_cast<McContext>(g_objects_counter.fetch_add(1, std::memory_order_relaxed));
+    
+    // Here we actually create the context object (as shared ptr) and stored in a global 
+    // variable g_contexts. Note that g_contexts can be accessed by multiple threads 
+    // simultaneously.
     g_contexts.push_front(std::shared_ptr<context_t>(
         new context_t(handle, flags
 #if defined(MCUT_WITH_COMPUTE_HELPER_THREADPOOL)
@@ -150,6 +190,7 @@ inline int trailing_zeroes(uint32_t v)
 #if __linux__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#pragma GCC diagnostic ignored "-Wuninitialized"
 #endif
 
     r = (*(uint32_t*)&f >> 23) - 0x7f;
@@ -302,6 +343,17 @@ void get_info_impl(
             memcpy(pMem, reinterpret_cast<const McConnectedComponentFaceWindingOrder*>(&wo), sizeof(McConnectedComponentFaceWindingOrder));
         }
     } break;
+    case MC_CONTEXT_DISPATCH_INTERSECTION_TYPE:
+    {
+        if (pMem == nullptr) {
+            *pNumBytes = sizeof(McDispatchIntersectionType);
+        }
+        else {
+            const McDispatchIntersectionType dit = context_ptr->get_most_recent_dispatch_intersection_type();
+            memcpy(pMem, reinterpret_cast<const McDispatchIntersectionType*>(&dit), sizeof(McDispatchIntersectionType));
+        }
+    }
+    break;
 
     default:
         throw std::invalid_argument("unknown info parameter");
@@ -704,7 +756,7 @@ void generate_supertriangle_from_mesh_vertices(
 
             coords[j] = coord;
         }
-        mean = mean+coords;
+        mean = mean + coords;
         const double dot = dot_product(n, coords);
 
         if (dot < proj_min) {
@@ -717,7 +769,7 @@ void generate_supertriangle_from_mesh_vertices(
             proj_max = dot;
         }
     }
-    mean = mean/numMeshVertices;
+    mean = mean / numMeshVertices;
     // length of bounding box diagonal
     const double bbox_diag = length(bbox_max - bbox_min);
     // length from vertex with most-minimum projection to vertex with most-maximum projection
@@ -756,13 +808,13 @@ void generate_supertriangle_from_mesh_vertices(
     const vec3 v = cross_product(n, u);
 
     const double mean_dot_n = dot_product(mean, n);
-    vec3 mean_on_plane = mean - n*mean_dot_n;
+    vec3 mean_on_plane = mean - n * mean_dot_n;
 
-    vec3 uv_pos = normalize( (u + v) );
-    vec3 uv_neg = normalize( (u - v) );
-    vec3 vertex0 = mean_on_plane + uv_pos * ( bbox_diag * 2);
-    vec3 vertex1 = mean_on_plane + uv_neg * ( bbox_diag * 2);
-    vec3 vertex2 = mean_on_plane - (normalize(uv_pos + uv_neg) * ( bbox_diag * 2));// supertriangle_origin + (u * bbox_diag * 4);
+    vec3 uv_pos = normalize((u + v));
+    vec3 uv_neg = normalize((u - v));
+    vec3 vertex0 = mean_on_plane + uv_pos * (bbox_diag * 2);
+    vec3 vertex1 = mean_on_plane + uv_neg * (bbox_diag * 2);
+    vec3 vertex2 = mean_on_plane - (normalize(uv_pos + uv_neg) * (bbox_diag * 2)); // supertriangle_origin + (u * bbox_diag * 4);
 
     supertriangle_vertices.resize(9 * flt_size);
 
@@ -772,7 +824,7 @@ void generate_supertriangle_from_mesh_vertices(
         if (have_double) {
             memcpy(dst, &vertex0[i], flt_size);
         } else {
-            float tmp = vertex0[i];
+            float tmp = (float)vertex0[i];
             memcpy(dst, &tmp, flt_size);
         }
         counter++;
@@ -784,7 +836,7 @@ void generate_supertriangle_from_mesh_vertices(
         if (have_double) {
             memcpy(dst, &vertex1[i], flt_size);
         } else {
-            float tmp = vertex1[i];
+            float tmp = (float)vertex1[i];
             memcpy(dst, &tmp, flt_size);
         }
         counter++;
@@ -796,7 +848,7 @@ void generate_supertriangle_from_mesh_vertices(
         if (have_double) {
             memcpy(dst, &vertex2[i], flt_size);
         } else {
-            float tmp = vertex2[i];
+            float tmp = (float)vertex2[i];
             memcpy(dst, &tmp, flt_size);
         }
         counter++;
@@ -1983,15 +2035,15 @@ void get_connected_component_data_impl_detail(
     case MC_CONNECTED_COMPONENT_DATA_DISPATCH_PERTURBATION_VECTOR: {
         SCOPED_TIMER("MC_CONNECTED_COMPONENT_DATA_DISPATCH_PERTURBATION_VECTOR");
         if (pMem == nullptr) {
-            *pNumBytes = sizeof(vec3);
+            *pNumBytes = sizeof(McDouble)*3;
         } else {
-            if (bytes > sizeof(vec3)) {
+            if (bytes > sizeof(McDouble)*3) {
                 throw std::invalid_argument("out of bounds memory access");
             }
-            if (bytes % sizeof(vec3) != 0) {
+            if (bytes % (sizeof(McDouble)*3) != 0) {
                 throw std::invalid_argument("invalid number of bytes");
             }
-
+            
             ((McDouble*)pMem)[0] = cc_uptr->perturbation_vector[0];
             ((McDouble*)pMem)[1] = cc_uptr->perturbation_vector[1];
             ((McDouble*)pMem)[2] = cc_uptr->perturbation_vector[2];
@@ -2067,7 +2119,7 @@ void get_connected_component_data_impl_detail(
                 throw std::invalid_argument("invalid number of bytes");
             }
 
-            const uint32_t num_indices_to_copy = bytes / sizeof(uint32_t);
+            const uint32_t num_indices_to_copy = (uint32_t)(bytes / sizeof(uint32_t));
             uint32_t* casted_ptr = reinterpret_cast<uint32_t*>(pMem);
 
 #if defined(MCUT_WITH_COMPUTE_HELPER_THREADPOOL)
@@ -2115,7 +2167,7 @@ void get_connected_component_data_impl_detail(
                 //
 
                 auto fn_face_indices_copy = [flip_winding_order, &cc_uptr, &partial_sum_vec, &casted_ptr, &num_indices_to_copy](face_array_iterator_t block_start_, face_array_iterator_t block_end_) {
-                    const uint32_t base_face_offset = std::distance(cc_uptr->kernel_hmesh_data->mesh->faces_begin(), block_start_);
+                    const uint32_t base_face_offset = (uint32_t)std::distance(cc_uptr->kernel_hmesh_data->mesh->faces_begin(), block_start_);
 
                     MCUT_ASSERT(base_face_offset < (uint32_t)cc_uptr->face_sizes_cache.size());
 
@@ -2408,7 +2460,7 @@ void get_connected_component_data_impl_detail(
                 //
 
                 auto fn_face_adjface_indices_copy = [&cc_uptr, &partial_sum_vec, &casted_ptr](face_array_iterator_t block_start_, face_array_iterator_t block_end_) {
-                    const uint32_t base_face_offset = std::distance(cc_uptr->kernel_hmesh_data->mesh->faces_begin(), block_start_);
+                    const uint32_t base_face_offset = (uint32_t)std::distance(cc_uptr->kernel_hmesh_data->mesh->faces_begin(), block_start_);
 
                     MCUT_ASSERT(base_face_offset < (uint32_t)cc_uptr->face_adjacent_faces_size_cache.size());
 
@@ -2713,7 +2765,7 @@ void get_connected_component_data_impl_detail(
     } break;
     case MC_CONNECTED_COMPONENT_DATA_SEAM_VERTEX: {
         if (cc_uptr->type == MC_CONNECTED_COMPONENT_TYPE_INPUT) {
-            throw std::invalid_argument("cannot query seam vertices on input connected component");
+            throw std::invalid_argument("cannot query seam vertices on connected component of type 'input'");
         }
 
         const uint32_t seam_vertex_count = (uint32_t)cc_uptr->kernel_hmesh_data->seam_vertices.size();
@@ -2729,7 +2781,7 @@ void get_connected_component_data_impl_detail(
                 throw std::invalid_argument("invalid number of bytes");
             }
 
-            const uint32_t elems_to_copy = bytes / sizeof(uint32_t);
+            const uint32_t elems_to_copy = (uint32_t)(bytes / sizeof(uint32_t));
 
             uint32_t* casted_ptr = reinterpret_cast<uint32_t*>(pMem);
 
@@ -2770,10 +2822,261 @@ void get_connected_component_data_impl_detail(
 #endif
         }
     } break;
+    case MC_CONNECTED_COMPONENT_DATA_SEAM_VERTEX_SEQUENCE: {
+        if (cc_uptr->type == MC_CONNECTED_COMPONENT_TYPE_INPUT) {
+            throw std::invalid_argument("cannot query seam vertices on connected component of type 'MC_CONNECTED_COMPONENT_TYPE_INPUT'");
+        }
+
+        const std::shared_ptr<hmesh_t>& cc = cc_uptr->kernel_hmesh_data->mesh;
+
+        const uint32_t seam_vertex_count = (uint32_t)cc_uptr->kernel_hmesh_data->seam_vertices.size();
+        MCUT_ASSERT(seam_vertex_count >= 2);
+
+        if (cc_uptr->seam_vertex_sequence_array_cache.empty()) {
+            std::vector<uint32_t>& seam_vertex_sequence_array = cc_uptr->seam_vertex_sequence_array_cache;
+
+            McUint32 total_seq_count = 0;
+            const uint32_t total_seq_count_idx = (uint32_t)seam_vertex_sequence_array.size();
+            MCUT_ASSERT(total_seq_count_idx == 0);
+
+            seam_vertex_sequence_array.push_back(MC_UNDEFINED_VALUE); // location that we will used to store total_seq_count at the end
+
+            seam_vertex_sequence_array.reserve(seam_vertex_count + 32);
+            McSize seam_vertex_sequence_array_start_offset = 1;
+
+            std::unordered_map<vd_t, bool> traversed_seam_vertices;
+            traversed_seam_vertices.reserve(seam_vertex_count);
+            for (uint32_t i = 0; i < seam_vertex_count; ++i) {
+                const vd_t descr = cc_uptr->kernel_hmesh_data->seam_vertices[i];
+                traversed_seam_vertices[descr] = false;
+            }
+
+            do { // each iteration determines a fully-connected sequence of seam vertices
+
+                std::stack<std::pair<vd_t, hd_t>> disjoint_seq_stack; // stores the next vertices on the left and right side of seed vertex
+
+                //  find any seam vertex that is not traversed, use that as a starting point -> the "seed"
+                std::unordered_map<vd_t, bool>::iterator seed_fiter = std::find_if( // O(n)
+                    traversed_seam_vertices.begin(),
+                    traversed_seam_vertices.end(),
+                    [](const std::pair<vd_t, bool>& elem) {
+                        return elem.second == false;
+                    });
+
+                seed_fiter->second = true; // marked the seed as traversed
+
+                const McSize cur_seq_size_value_idx = seam_vertex_sequence_array.size();
+                const McSize cur_seq_flag_value_idx = cur_seq_size_value_idx + 1;
+
+                // seam_vertex_sequence_array_start_offset += 2; // spaces occupied by cur_seq_size_value_idx and cur_seq_flag_value_idx
+                seam_vertex_sequence_array.push_back(MC_UNDEFINED_VALUE);
+                seam_vertex_sequence_array.push_back(MC_UNDEFINED_VALUE);
+
+                // Starting from the seed, each iteration of the following loop will
+                // find a sorted sequence of seam vertices, with a flag stating
+                // whether this sequence is a loop or not
+                // while (seed_fiter != traversed_seam_vertices.end()) {
+
+                // the seed vertex may be a vertex anywhere along a cut path/seam,
+                // and we build (collect all vertices of) its respective sequence by walking to
+                // the left and right side/neighbours.
+                // The fact that we walk left and right implies that two dijoint draft sequences
+                // will be found which will need to be merged later. These disjoint draft sequences
+                // are stored in "disjoint_vertex_sequences_of_same_seam".
+
+                const McUint32 seed_vertex_descr = (McUint32)seed_fiter->first;
+                seam_vertex_sequence_array.push_back(seed_vertex_descr);
+
+                //
+                // find the left and right neighbours of the current seed vertex
+                // which we will use to start the processing of build the sequence
+                // to which the "seed" belongs.
+                //
+
+                const std::vector<hd_t>& halfedges_around_seed_vertex = cc->get_halfedges_around_vertex(vd_t(seed_vertex_descr));
+
+                // for each halfedge whose target is the seed
+                for (std::vector<hd_t>::const_iterator it = halfedges_around_seed_vertex.cbegin(); it != halfedges_around_seed_vertex.cend(); ++it) {
+                    const hd_t h = *it;
+                    const vd_t src = cc->source(h); // get the halfedge's source
+
+                    // is it even a seam vertex first of all?
+                    std::unordered_map<vd_t, bool>::iterator fiter = traversed_seam_vertices.find(src);
+                    const bool is_seam_vertex = fiter != traversed_seam_vertices.cend();
+
+                    if (is_seam_vertex) {
+                        bool& is_traversed = fiter->second;
+
+                        if (!is_traversed) {
+                            // push since this neighbour is a seam vertex that has not been traversed
+                            disjoint_seq_stack.push(std::make_pair(src, h));
+
+                            is_traversed = true; // mark the neighbour as traversed (because we immediately traverse it next)
+                        }
+                    }
+                }
+
+                MCUT_ASSERT(disjoint_seq_stack.size() == 1 || disjoint_seq_stack.size() == 2);
+
+                // this means will we are guarranteed to find just one sequence i.e. the draft disjoint sequence
+                // is the actual output sequence (and its an open sequence). disjoint_seq_stack will have one element
+                // if the seed vertex is a terminal vertex of the seam
+                const bool stack_initialised_with_one_element = disjoint_seq_stack.size() == 1;
+
+                // An iteration will find a single sequence (which may be a loop, or a an open sequence that does not form a loop,
+
+                do {
+
+                    std::pair<vd_t, hd_t> cur_vh_pair = disjoint_seq_stack.top();
+                    disjoint_seq_stack.pop();
+
+                    const vd_t v = cur_vh_pair.first; // vertex, one of whose halfedges (along the seam) is h
+                    const hd_t h = cur_vh_pair.second; // halfedge whose source is v
+
+                    seam_vertex_sequence_array.push_back((McIndex)v);
+
+                    uint32_t untraversed_adj_seam_vertex_count = 0;
+
+                    // similar logic as above to find the neighours of the seed, which polulate the stack "disjoint_seq_stack"
+                    const std::vector<hd_t>& halfedges_around_vertex = cc->get_halfedges_around_vertex(v);
+
+                    for (std::vector<hd_t>::const_iterator it = halfedges_around_vertex.cbegin();
+                         it != halfedges_around_vertex.cend();
+                         ++it) {
+                        const hd_t incident_h = *it;
+
+                        if (cc->edge(incident_h) == cc->edge(h)) {
+                            continue; // skip! dont want to go backwards now...
+                        }
+
+                        const vd_t src = cc->source(incident_h);
+                        std::unordered_map<vd_t, bool>::iterator fiter = traversed_seam_vertices.find(src);
+                        const bool is_seam_vertex = fiter != traversed_seam_vertices.cend();
+
+                        if (is_seam_vertex) {
+                            bool& is_traversed = fiter->second;
+
+                            if (!is_traversed) {
+                                untraversed_adj_seam_vertex_count++;
+                                disjoint_seq_stack.push(std::make_pair(src, incident_h));
+
+                                is_traversed = true;
+                            }
+                        }
+                    }
+
+                    //MCUT_ASSERT(untraversed_adj_seam_vertex_count <= 1);
+
+                    // no further neighbours to walk/traverse but the stack still has seam vertices to be walked.
+                    // This implies we have an open loop, and that we have finished finding the first disjoint part
+                    // so we append vertices of the next
+                    if (untraversed_adj_seam_vertex_count == 0 && !disjoint_seq_stack.empty()) {
+                        // we reverse the vertices representing the first disjoint part because they proceed in the oppositie order
+                        // from the seed vertex, when compared with the vertices (now to be added) of the second disjoint part
+                        std::reverse(
+                            seam_vertex_sequence_array.begin() + seam_vertex_sequence_array_start_offset + 2, // the "2" is for the size and bool-flag slots
+                            seam_vertex_sequence_array.end());
+
+                        // NOTE: reaching this part of the code means that we definitely do not have a loop
+                    }
+                } while (disjoint_seq_stack.empty() == false);
+
+                // At this point, we have traced/walked the set of vertices that belong to teh full sequence .
+
+                McBool have_loop = !stack_initialised_with_one_element;
+
+                if (!stack_initialised_with_one_element) { // confirm that we really do have a loop because an open sequence could also lead to !stack_initialised_with_one_element (depending on the seed vertex)
+
+                    // Get first vertex of sequence and check whether it is connected to two other seam vertices
+                    // if true then we have a loop otherwise, we have an open sequence
+                    const McUint32 first = *(seam_vertex_sequence_array.cbegin() + seam_vertex_sequence_array_start_offset + 2);
+
+                    uint32_t num_adj_seam_vertices = 0;
+                    const std::vector<hd_t>& halfedges_around_first_vertex = cc->get_halfedges_around_vertex(vd_t(first));
+
+                    for (std::vector<hd_t>::const_iterator it = halfedges_around_first_vertex.cbegin();
+                         it != halfedges_around_first_vertex.cend();
+                         ++it) {
+                        const hd_t incident_h = *it;
+
+                        const vd_t src = cc->source(incident_h);
+                        std::unordered_map<vd_t, bool>::iterator fiter = traversed_seam_vertices.find(src);
+                        const bool is_seam_vertex = fiter != traversed_seam_vertices.cend();
+
+                        if (is_seam_vertex) {
+                            num_adj_seam_vertices++;
+                        }
+                    }
+
+                    MCUT_ASSERT(num_adj_seam_vertices == 1 || num_adj_seam_vertices == 2);
+
+                    have_loop = (num_adj_seam_vertices == 2) ? MC_TRUE : MC_FALSE;
+                }
+
+                const uint32_t num_vertices_in_built_sequence = (uint32_t)std::distance(
+                    seam_vertex_sequence_array.cbegin() + seam_vertex_sequence_array_start_offset + 2,
+                    seam_vertex_sequence_array.cend());
+
+                MCUT_ASSERT(cur_seq_size_value_idx == seam_vertex_sequence_array_start_offset);
+
+                total_seq_count += 1; // increment number of sequences found
+
+                seam_vertex_sequence_array[cur_seq_size_value_idx] = num_vertices_in_built_sequence;
+                seam_vertex_sequence_array[cur_seq_flag_value_idx] = have_loop;
+
+                seam_vertex_sequence_array[total_seq_count_idx] = total_seq_count;
+
+                // elements consumed by current sequence
+                seam_vertex_sequence_array_start_offset += num_vertices_in_built_sequence + 2;
+
+                // remove traversed vertices
+                for (auto it = begin(traversed_seam_vertices); it != end(traversed_seam_vertices);) {
+                    if (it->second == true) {
+                        it = traversed_seam_vertices.erase(it); // previously this was something like m_map.erase(it++);
+                    } else
+                        ++it;
+                }
+
+                traversed_seam_vertices.rehash(traversed_seam_vertices.size() + 1);
+
+            } while (traversed_seam_vertices.size() > 0);
+        } // if(seam_vertex_sequence_array.empty())
+
+        // minimum possible number of elements
+        MCUT_ASSERT(cc_uptr->seam_vertex_sequence_array_cache.size() >= 5);
+
+        if (pMem == nullptr) {
+            *pNumBytes = cc_uptr->seam_vertex_sequence_array_cache.size() * sizeof(uint32_t);
+        } else {
+            if (bytes > (cc_uptr->seam_vertex_sequence_array_cache.size() * sizeof(uint32_t))) {
+                throw std::invalid_argument("out of bounds memory access");
+            }
+
+            if ((bytes % (sizeof(uint32_t))) != 0) {
+                throw std::invalid_argument("invalid number of bytes");
+            }
+
+            const uint32_t elems_to_copy = (uint32_t)(bytes / sizeof(uint32_t));
+
+            uint32_t* casted_ptr = reinterpret_cast<uint32_t*>(pMem);
+
+            // memcpy
+            uint32_t elem_offset = 0;
+
+            // TODO: make parallel
+            for (uint32_t i = 0; i < elems_to_copy; ++i) {
+                const uint32_t value = cc_uptr->seam_vertex_sequence_array_cache[i];
+                *(casted_ptr + elem_offset) = value;
+                elem_offset++;
+            }
+
+            MCUT_ASSERT(elem_offset <= (uint32_t)cc_uptr->seam_vertex_sequence_array_cache.size());
+        }
+    } break;
     case MC_CONNECTED_COMPONENT_DATA_VERTEX_MAP: {
         SCOPED_TIMER("MC_CONNECTED_COMPONENT_DATA_VERTEX_MAP");
 
-        const uint32_t vertex_map_size = cc_uptr->kernel_hmesh_data->data_maps.vertex_map.size();
+        const uint32_t vertex_map_size = (uint32_t)cc_uptr->kernel_hmesh_data->data_maps.vertex_map.size();
 
         if (vertex_map_size == 0) {
             throw std::invalid_argument("vertex map not available"); // user probably forgot to set the dispatch flag
@@ -2792,7 +3095,7 @@ void get_connected_component_data_impl_detail(
                 throw std::invalid_argument("invalid number of bytes");
             }
 
-            const uint32_t elems_to_copy = (bytes / sizeof(uint32_t));
+            const uint32_t elems_to_copy = (uint32_t)(bytes / sizeof(uint32_t));
 
             MCUT_ASSERT(elems_to_copy <= vertex_map_size);
 
@@ -2921,7 +3224,7 @@ void get_connected_component_data_impl_detail(
     case MC_CONNECTED_COMPONENT_DATA_FACE_MAP: {
         SCOPED_TIMER("MC_CONNECTED_COMPONENT_DATA_FACE_MAP");
 
-        const uint32_t face_map_size = cc_uptr->kernel_hmesh_data->data_maps.face_map.size();
+        const uint32_t face_map_size = (uint32_t)cc_uptr->kernel_hmesh_data->data_maps.face_map.size();
 
         if (face_map_size == 0) {
             throw std::invalid_argument("face map not available"); // user probably forgot to set the dispatch flag
@@ -2940,7 +3243,7 @@ void get_connected_component_data_impl_detail(
                 throw std::invalid_argument("invalid number of bytes");
             }
 
-            const uint32_t elems_to_copy = (bytes / sizeof(uint32_t));
+            const uint32_t elems_to_copy = (uint32_t)(bytes / sizeof(uint32_t));
 
             uint32_t* casted_ptr = reinterpret_cast<uint32_t*>(pMem);
 
@@ -2955,7 +3258,7 @@ void get_connected_component_data_impl_detail(
 
                     for (std::vector<fd_t>::const_iterator f_iter = block_start_; f_iter != block_end_; ++f_iter) {
 
-                        if ((elem_offset + 1) >= elems_to_copy) {
+                        if ((elem_offset + 1) > elems_to_copy) {
                             break;
                         }
 
@@ -3001,7 +3304,7 @@ void get_connected_component_data_impl_detail(
         // internal halfedge data structure from the current connected component
         const std::shared_ptr<hmesh_t> cc = cc_uptr->kernel_hmesh_data->mesh;
 
-        const uint32_t nontri_face_map_size = cc_uptr->kernel_hmesh_data->data_maps.face_map.size();
+        const uint32_t nontri_face_map_size = (uint32_t)cc_uptr->kernel_hmesh_data->data_maps.face_map.size();
 
         // user has set the dispatch flag to allow us to save the face maps.
         const bool user_requested_cdt_face_maps = (nontri_face_map_size != 0);
@@ -3010,9 +3313,9 @@ void get_connected_component_data_impl_detail(
         {
             MCUT_ASSERT(cc_uptr->cdt_index_cache.empty());
 
-            const uint32_t cc_face_count = cc->number_of_faces();
+            const uint32_t cc_face_count = (uint32_t)cc->number_of_faces();
             if (user_requested_cdt_face_maps) {
-                cc_uptr->cdt_face_map_cache.reserve(cc_face_count * 1.2);
+                cc_uptr->cdt_face_map_cache.reserve((uint32_t)(cc_face_count * 1.2));
             }
 
 #if defined(MCUT_WITH_COMPUTE_HELPER_THREADPOOL)
@@ -3035,7 +3338,7 @@ void get_connected_component_data_impl_detail(
                 const uint32_t min_per_thread = 1 << 10;
                 {
                     uint32_t max_threads = 0;
-                    const uint32_t available_threads = context_ptr->get_shared_compute_threadpool().get_num_threads() + 1; // workers and master (+1)
+                    const uint32_t available_threads = (uint32_t)(context_ptr->get_shared_compute_threadpool().get_num_threads() + 1); // workers and master (+1)
                     uint32_t block_size_unused = 0;
                     const uint32_t length = cc_face_count;
 
@@ -3058,7 +3361,7 @@ void get_connected_component_data_impl_detail(
                     const uint32_t num_elems_to_process = (uint32_t)std::distance(block_start_, block_end_);
                     cdt_index_cache_local.reserve(num_elems_to_process * 4);
                     std::vector<uint32_t> cdt_face_map_cache_local;
-                    cdt_face_map_cache_local.reserve(num_elems_to_process * 1.2);
+                    cdt_face_map_cache_local.reserve((uint32_t)(num_elems_to_process * 1.2));
 
                     std::vector<vertex_descriptor_t> cc_face_vertices;
                     std::vector<uint32_t> cc_face_triangulation;
@@ -3121,7 +3424,7 @@ void get_connected_component_data_impl_detail(
                     }
 
                     // local num triangulation indices computed by thread
-                    const uint32_t cdt_index_cache_local_len = cdt_index_cache_local.size();
+                    const uint32_t cdt_index_cache_local_len = (uint32_t)cdt_index_cache_local.size();
 
                     const uint32_t write_offset = cdt_index_cache_offset.fetch_add(cdt_index_cache_local_len);
 
@@ -3307,7 +3610,7 @@ void get_connected_component_data_impl_detail(
     case MC_CONNECTED_COMPONENT_DATA_FACE_TRIANGULATION_MAP: {
         SCOPED_TIMER("MC_CONNECTED_COMPONENT_DATA_FACE_TRIANGULATION_MAP");
         // The default/standard non-tri face map. If this is defined then the tri-face map must also be defined
-        const uint32_t face_map_size = cc_uptr->kernel_hmesh_data->data_maps.face_map.size();
+        const uint32_t face_map_size = (uint32_t)cc_uptr->kernel_hmesh_data->data_maps.face_map.size();
 
         if (face_map_size == 0) {
             throw std::invalid_argument("face map not available"); // user probably forgot to set the dispatch flag
@@ -3341,7 +3644,7 @@ void get_connected_component_data_impl_detail(
             MCUT_ASSERT(cc_uptr->cdt_face_map_cache_initialized == true);
         }
 
-        const uint32_t triangulated_face_map_size = cc_uptr->cdt_face_map_cache.size();
+        const uint32_t triangulated_face_map_size = (uint32_t)cc_uptr->cdt_face_map_cache.size();
 
         MCUT_ASSERT(triangulated_face_map_size >= face_map_size);
 

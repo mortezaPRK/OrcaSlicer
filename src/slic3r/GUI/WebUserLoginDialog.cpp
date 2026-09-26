@@ -341,7 +341,7 @@ void ZUserLogin::OnScriptMessage(wxWebViewEvent &evt)
 
     try {
         json j = json::parse(into_u8(str_input));
-        wxString strCmd = j["command"];
+        wxString strCmd = wxString::FromUTF8(j["command"].get<std::string>());
         
         if (m_cloud_agent && strCmd == "get_login_cmd") {
             // Return login config (backend_url, apikey, pkce)

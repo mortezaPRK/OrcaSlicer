@@ -1,24 +1,37 @@
-/**
- * Copyright (c) 2021-2022 Floyd M. Chitalu.
- * All rights reserved.
+/***************************************************************************
+ *  This file is part of the MCUT project, which is comprised of a library 
+ *  for surface mesh cutting, example programs and test programs.
+ * 
+ *  Copyright (C) 2024 CutDigital Enterprise Ltd
+ *  
+ *  MCUT is dual-licensed software that is available under an Open Source 
+ *  license as well as a commercial license. The Open Source license is the 
+ *  GNU Lesser General Public License v3+ (LGPL). The commercial license 
+ *  option is for users that wish to use MCUT in their products for commercial 
+ *  purposes but do not wish to release their software under the LGPL. 
+ *  Email <contact@cut-digital.com> for further information.
  *
- * NOTE: This file is licensed under GPL-3.0-or-later (default).
- * A commercial license can be purchased from Floyd M. Chitalu.
+ *  You may not use this file except in compliance with the License. A copy of 
+ *  the Open Source license can be obtained from
  *
- * License details:
+ *      https://www.gnu.org/licenses/lgpl-3.0.en.html.
  *
- * (A)  GNU General Public License ("GPL"); a copy of which you should have
- *      recieved with this file.
- * 	    - see also: <http://www.gnu.org/licenses/>
- * (B)  Commercial license.
- *      - email: floyd.m.chitalu@gmail.com
+ *  For your convenience, a copy of this License has been included in this
+ *  repository.
  *
- * The commercial license options is for users that wish to use MCUT in
- * their products for comercial purposes but do not wish to release their
- * software products under the GPL license.
+ *  MCUT is distributed in the hope that it will be useful, but THE SOFTWARE IS 
+ *  PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+ *  INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR 
+ *  A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR 
+ *  COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+ *  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF 
+ *  OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
- * Author(s)     : Floyd M. Chitalu
- */
+ * Author(s):
+ *
+ *    Floyd M. Chitalu    CutDigital Enterprise Ltd.
+ *
+ **************************************************************************/
 
 #include "mcut/mcut.h"
 
@@ -39,7 +52,7 @@ MCAPI_ATTR McResult MCAPI_CALL mcCreateContext(McContext* pOutContext, McFlags c
     per_thread_api_log_str.clear();
 
     if (pOutContext == nullptr) {
-        per_thread_api_log_str = "context ptr undef (NULL)";
+        per_thread_api_log_str = "context ptr undefined (NULL)";
         return_value = McResult::MC_INVALID_VALUE;
     } else {
         try {
@@ -199,13 +212,14 @@ MCAPI_ATTR McResult MCAPI_CALL mcGetInfo(const McContext context, McFlags info, 
     } else if (bytes != 0 && pMem == nullptr) {
         per_thread_api_log_str = "invalid specification (param2 & param3)";
     } else if (false == //
-        (info == MC_CONTEXT_FLAGS || //
-            info == MC_CONTEXT_MAX_DEBUG_MESSAGE_LENGTH || //
-            info == MC_CONTEXT_GENERAL_POSITION_ENFORCEMENT_CONSTANT || //
-            info == MC_CONTEXT_GENERAL_POSITION_ENFORCEMENT_ATTEMPTS)) // check all possible values
+        (info & MC_CONTEXT_FLAGS || //
+            info & MC_CONTEXT_MAX_DEBUG_MESSAGE_LENGTH || //
+            info & MC_CONTEXT_GENERAL_POSITION_ENFORCEMENT_CONSTANT || //
+            info & MC_CONTEXT_GENERAL_POSITION_ENFORCEMENT_ATTEMPTS || //
+            info & MC_CONTEXT_DISPATCH_INTERSECTION_TYPE)) // check all possible values
     {
         per_thread_api_log_str = "invalid info flag val (param1)";
-    } else if ((info == MC_CONTEXT_FLAGS) && (pMem != nullptr && bytes != sizeof(McFlags))) {
+    } else if ((info & MC_CONTEXT_FLAGS) && (pMem != nullptr && bytes != sizeof(McFlags))) {
         per_thread_api_log_str = "invalid byte size (param2)"; // leads to e.g. "out of bounds" memory access during memcpy
     } else {
         try {
@@ -241,15 +255,15 @@ MCAPI_ATTR McResult MCAPI_CALL mcBindState(
     } else if (pMem == nullptr) {
         per_thread_api_log_str = "invalid ptr (pMem)";
     } else if (false == //
-        (stateInfo == MC_CONTEXT_GENERAL_POSITION_ENFORCEMENT_CONSTANT || //
-            stateInfo == MC_CONTEXT_GENERAL_POSITION_ENFORCEMENT_ATTEMPTS ||//
-            stateInfo == MC_CONTEXT_CONNECTED_COMPONENT_FACE_WINDING_ORDER)) // check all possible values
+        (stateInfo & MC_CONTEXT_GENERAL_POSITION_ENFORCEMENT_CONSTANT || //
+            stateInfo & MC_CONTEXT_GENERAL_POSITION_ENFORCEMENT_ATTEMPTS ||//
+            stateInfo & MC_CONTEXT_CONNECTED_COMPONENT_FACE_WINDING_ORDER)) // check all possible values
     {
         per_thread_api_log_str = "invalid stateInfo ";
     } else if (
-        ((stateInfo == MC_CONTEXT_GENERAL_POSITION_ENFORCEMENT_CONSTANT) && bytes != sizeof(McDouble)) || //
-        ((stateInfo == MC_CONTEXT_GENERAL_POSITION_ENFORCEMENT_ATTEMPTS) && bytes != sizeof(McUint32))|| //
-        ((stateInfo == MC_CONTEXT_CONNECTED_COMPONENT_FACE_WINDING_ORDER) && bytes != sizeof(McConnectedComponentFaceWindingOrder))) {
+        ((stateInfo & MC_CONTEXT_GENERAL_POSITION_ENFORCEMENT_CONSTANT) && bytes != sizeof(McDouble)) || //
+        ((stateInfo & MC_CONTEXT_GENERAL_POSITION_ENFORCEMENT_ATTEMPTS) && bytes != sizeof(McUint32))|| //
+        ((stateInfo & MC_CONTEXT_CONNECTED_COMPONENT_FACE_WINDING_ORDER) && bytes != sizeof(McConnectedComponentFaceWindingOrder))) {
         per_thread_api_log_str = "invalid num bytes"; // leads to e.g. "out of bounds" memory access during memcpy
     } else {
         try {

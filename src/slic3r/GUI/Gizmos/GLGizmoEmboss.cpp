@@ -879,7 +879,7 @@ static void draw_mouse_offset(const std::optional<Vec2d> &offset)
 {
     if (!offset.has_value()) return;
     // debug draw
-    auto   draw_list = ImGui::GetOverlayDrawList();
+    auto   draw_list = ImGui::GetForegroundDrawList();
     ImVec2 p1        = ImGui::GetMousePos();
     ImVec2 p2(p1.x + offset->x(), p1.y + offset->y());
     ImU32  color     = ImGui::GetColorU32(ImGuiWrapper::COL_ORANGE_LIGHT);
@@ -1485,7 +1485,7 @@ void GLGizmoEmboss::draw_window(float x, float y)
 
     // close advanced style property when unknown font is selected
     if (m_is_unknown_font && m_is_advanced_edit_style) 
-        ImGui::SetNextTreeNodeOpen(false);
+        ImGui::SetNextItemOpen(false);
 
     // ImGui Bug: After switching to another window and switching back, clicking the text doesnt open/close the TreeNode anymore
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
@@ -1566,7 +1566,7 @@ void GLGizmoEmboss::draw_window(float x, float y)
 #endif //SHOW_ICONS_TEXTURE
 #ifdef SHOW_IMGUI_ATLAS
     const auto &atlas = m_style_manager.get_atlas();
-    ImGui::Image(atlas.TexID, ImVec2(atlas.TexWidth, atlas.TexHeight));
+    ImGui::Image(atlas.TexID, ImVec2(atlas.TexData->Width, atlas.TexData->Height));
 #endif // SHOW_IMGUI_ATLAS
 
 #ifdef ALLOW_OPEN_NEAR_VOLUME
@@ -1607,7 +1607,7 @@ void GLGizmoEmboss::draw_text_input()
         imgui_font != nullptr &&
         imgui_font->IsLoaded() &&
         imgui_font->Scale > 0.f &&
-        imgui_font->ContainerAtlas != nullptr;
+        imgui_font->OwnerAtlas != nullptr;
     // NOTE: Symbol fonts doesn't have atlas 
     // when their glyph range is out of language character range
     if (exist_font) ImGui::PushFont(imgui_font);
@@ -1672,7 +1672,7 @@ void GLGizmoEmboss::draw_text_input()
             m_imgui->tooltip(warning_tool_tip, m_gui_cfg->max_tooltip_width);
 
         ImVec2 cursor = ImGui::GetCursorPos();
-        float width = ImGui::GetContentRegionAvailWidth();
+        float width = ImGui::GetContentRegionAvail().x;
         const ImVec2& padding = style.FramePadding;
         ImVec2 icon_pos(width - m_gui_cfg->icon_width - scrollbar_width + padding.x, 
                         cursor.y - 2 * m_gui_cfg->icon_width - scrollbar_height - 2*padding.y);  // ORCA fix vertical position
@@ -2338,7 +2338,7 @@ void GLGizmoEmboss::draw_style_list() {
 
             ImVec2 selectable_size(0, m_imgui->scaled(32.f / 15.f)); // 0.0f -> calculated during draw
             // allow click delete button
-            ImGuiSelectableFlags_ flags = ImGuiSelectableFlags_AllowItemOverlap; 
+            ImGuiSelectableFlags_ flags = ImGuiSelectableFlags_AllowOverlap;
             if (ImGui::BBLSelectable(style.truncated_name.c_str(), is_selected, flags, selectable_size)) {
                 selected_style_index = index;
             } else if (ImGui::IsItemHovered())
@@ -2360,7 +2360,7 @@ void GLGizmoEmboss::draw_style_list() {
             if (img.has_value()) {
                 ImGui::SameLine(max_style_name_width);
                 ImVec4 tint_color = ImGui::GetStyleColorVec4(ImGuiCol_Text);
-                ImGui::Image(img->texture_id, img->tex_size, img->uv0, img->uv1, tint_color);
+                ImGui::ImageWithBg(img->texture_id, img->tex_size, img->uv0, img->uv1, ImVec4(0, 0, 0, 0), tint_color);
             }
 
             ImGui::PopID();
@@ -3744,7 +3744,7 @@ void draw_font_preview(FaceName &face, const std::string& text, Facenames &faces
     ImGui::SameLine(cfg.face_name_texture_offset_x);
     ImTextureID tex_id     = (void *) (intptr_t) faces.texture_id;
     ImVec4 tint_color = ImGui::GetStyleColorVec4(ImGuiCol_Text);
-    ImGui::Image(tex_id, size, uv0, uv1, tint_color);
+    ImGui::ImageWithBg(tex_id, size, uv0, uv1, ImVec4(0, 0, 0, 0), tint_color);
 }
 
 GuiCfg create_gui_configuration()

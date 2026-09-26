@@ -1599,14 +1599,19 @@ mdns_record_parse_txt(const void* buffer, size_t size, size_t offset, size_t len
 		strdata = (const char*)MDNS_POINTER_OFFSET(buffer, offset);
 		size_t sublength = *(const unsigned char*)strdata;
 
+		if (sublength >= (end - offset))
+			break;
+
 		++strdata;
 		offset += sublength + 1;
 
-		size_t separator = 0;
+		size_t separator = sublength;
 		for (size_t c = 0; c < sublength; ++c) {
 			// DNS-SD TXT record keys MUST be printable US-ASCII, [0x20, 0x7E]
-			if ((strdata[c] < 0x20) || (strdata[c] > 0x7E))
+			if ((strdata[c] < 0x20) || (strdata[c] > 0x7E)) {
+				separator = 0;
 				break;
+			}
 			if (strdata[c] == '=') {
 				separator = c;
 				break;
@@ -1624,6 +1629,8 @@ mdns_record_parse_txt(const void* buffer, size_t size, size_t offset, size_t len
 		} else {
 			records[parsed].key.str = strdata;
 			records[parsed].key.length = sublength;
+			records[parsed].value.str = 0;
+			records[parsed].value.length = 0;
 		}
 
 		++parsed;

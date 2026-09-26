@@ -328,10 +328,10 @@ void ProjectPanel::OnScriptMessage(wxWebViewEvent& evt)
         wxString strInput = evt.GetString();
         json     j = json::parse(strInput.utf8_string());
 
-        wxString strCmd = j["command"];
+        wxString strCmd = wxString::FromUTF8(j["command"].get<std::string>());
 
         if (strCmd == "open_3mf_accessory") {
-            wxString accessory_path =  j["accessory_path"];
+            wxString accessory_path =  wxString::FromUTF8(j["accessory_path"].get<std::string>());
 
             if (!accessory_path.empty()) {
                 std::string decode_path = wxGetApp().url_decode(accessory_path.ToStdString());

@@ -153,9 +153,9 @@ void DailyTipsDataRenderer::set_fade_opacity(float opacity)
 void DailyTipsDataRenderer::render_img(const ImVec2& start_pos, const ImVec2& size) const
 {
     if (has_image())
-        ImGui::Image((ImTextureID)(intptr_t)m_texture->get_id(), size, ImVec2(0, 0), ImVec2(1, 1), m_is_dark ? ImVec4(0.8, 0.8, 0.8, m_fade_opacity) : ImVec4(1, 1, 1, m_fade_opacity));
+        ImGui::ImageWithBg((ImTextureID)(intptr_t)m_texture->get_id(), size, ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), m_is_dark ? ImVec4(0.8, 0.8, 0.8, m_fade_opacity) : ImVec4(1, 1, 1, m_fade_opacity));
     // else {
-    //     ImGui::Image((ImTextureID)(intptr_t)m_placeholder_texture->get_id(), size, ImVec2(0, 0), ImVec2(1, 1), m_is_dark ? ImVec4(0.8, 0.8, 0.8, m_fade_opacity) : ImVec4(1, 1, 1, m_fade_opacity));
+    //     ImGui::ImageWithBg((ImTextureID)(intptr_t)m_placeholder_texture->get_id(), size, ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), m_is_dark ? ImVec4(0.8, 0.8, 0.8, m_fade_opacity) : ImVec4(1, 1, 1, m_fade_opacity));
     // }
 }
 
@@ -626,7 +626,7 @@ void DailyTipsWindow::render()
         m_panel->set_size(panel_size);
         m_panel->render();
 
-        if (ImGui::IsKeyDown(ImGui::GetKeyIndex(ImGuiKey_Escape))) {
+        if (ImGui::IsKeyDown(ImGuiKey_Escape)) {
             m_show = false;
             ImGui::CloseCurrentPopup();
         }

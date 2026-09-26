@@ -1,8 +1,7 @@
-# ImGuizmo
+Vendored from ImGuizmo 1.10: https://github.com/CedricGuillemet/ImGuizmo/tree/1.10
 
-Latest stable tagged version is 1.83. Current master version is 1.84 WIP.
-
-What started with the gizmo is now a collection of dear imgui widgets and more advanced controls.
+Orca retains its labeled navigation cube, orthographic cube projection, constrained
+camera rotation, interaction result, and disabled unused transform gizmos.
 
 ## Guizmos
 

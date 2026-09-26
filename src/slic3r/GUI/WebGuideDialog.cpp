@@ -474,14 +474,14 @@ void GuideFrame::OnScriptMessage(wxWebViewEvent &evt)
         BOOST_LOG_TRIVIAL(trace) << "GuideFrame::OnScriptMessage;OnRecv:" << strInput.c_str();
         json     j        = json::parse(strInput.utf8_string());
 
-        wxString strCmd = j["command"];
+        wxString strCmd = wxString::FromUTF8(j["command"].get<std::string>());
         BOOST_LOG_TRIVIAL(trace) << "GuideFrame::OnScriptMessage;Command:" << strCmd;
 
         if (strCmd == "close_page") {
             this->EndModal(wxID_CANCEL);
         }
         if (strCmd == "user_clause") {
-            wxString strAction = j["data"]["action"];
+            wxString strAction = wxString::FromUTF8(j["data"]["action"].get<std::string>());
 
             if (strAction == "refuse") {
                 // CloseTheApp
@@ -490,7 +490,7 @@ void GuideFrame::OnScriptMessage(wxWebViewEvent &evt)
                 m_MainPtr->mainframe->Close(); // Refuse Clause, App quit immediately
             }
         } else if (strCmd == "user_private_choice") {
-            wxString strAction = j["data"]["action"];
+            wxString strAction = wxString::FromUTF8(j["data"]["action"].get<std::string>());
 
             if (strAction == "agree") {
                 PrivacyUse = true;
@@ -533,8 +533,8 @@ void GuideFrame::OnScriptMessage(wxWebViewEvent &evt)
                 for (auto it = MSelected.begin(); it != MSelected.end(); ++it) {
                     json OneSelect = it.value();
 
-                    wxString s1 = TmpModel["model"];
-                    wxString s2 = OneSelect["model"];
+                    wxString s1 = wxString::FromUTF8(TmpModel["model"].get<std::string>());
+                    wxString s2 = wxString::FromUTF8(OneSelect["model"].get<std::string>());
                     if (s1.compare(s2) == 0) {
                         m_ProfileJson["model"][m]["nozzle_selected"] = m_ProfileJson["model"][m]["nozzle_diameter"];
 
@@ -721,7 +721,7 @@ void GuideFrame::OnScriptMessage(wxWebViewEvent &evt)
                 InstallNetplugin = false;
         }
         else if (strCmd == "save_stealth_mode") {
-            wxString strAction = j["data"]["action"];
+            wxString strAction = wxString::FromUTF8(j["data"]["action"].get<std::string>());
 
             if (strAction == "yes") {
                 StealthMode = true;

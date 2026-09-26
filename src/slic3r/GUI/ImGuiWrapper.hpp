@@ -71,6 +71,7 @@ class ImGuiWrapper
     bool m_requires_extra_frame{ false };
 #endif // ENABLE_ENHANCED_IMGUI_SLIDER_FLOAT
     std::map<wchar_t, int> m_custom_glyph_rects_ids;
+    std::map<int, ImGuiKey> m_pressed_keys;
     std::string m_clipboard_text;
 
 public:
@@ -291,7 +292,7 @@ public:
     /// <param name="color">Color of polygon</param>
     /// <param name="thickness">Width of polygon line</param>
     static void draw(const Polygon &polygon,
-                     ImDrawList *   draw_list = ImGui::GetOverlayDrawList(),
+                     ImDrawList *   draw_list = ImGui::GetForegroundDrawList(),
                      ImU32 color     = ImGui::GetColorU32(COL_ORANGE_LIGHT),
                      float thickness = 3.f);
 
@@ -345,7 +346,7 @@ public:
     static ColorRGBA from_ImU32(const ImU32& color);
     static ColorRGBA from_ImVec4(const ImVec4& color);
 
-    ImFontAtlasCustomRect* GetTextureCustomRect(const wchar_t& tex_id);
+    const ImFontAtlasCustomRect* GetTextureCustomRect(const wchar_t& tex_id);
 
     static const ImVec4 COL_GREY_DARK;
     static const ImVec4 COL_GREY_LIGHT;

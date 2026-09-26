@@ -1,7 +1,6 @@
-Derived from 
-https://cgit.freedesktop.org/mesa/glu/
-commit 0bf42e41c8b63fc2488dd8d41f696310b5a5a6a7
-Fri Jun 10 05:30:00 2016
+GLU 9.0.3 libtess subset, https://archive.mesa3d.org/glu/glu-9.0.3.tar.xz
+The tessellator sources match this release except for the standalone public header.
+Originally imported from commit 0bf42e41c8b63fc2488dd8d41f696310b5a5a6a7.
 
 This directory contains just the libtess tesselation library to be statically compilable without OpenGL dependencies.
 Only the following functions are provided, and mangled:

@@ -2,7 +2,7 @@
 #include "TriMesh.hpp"
 #include "CgalUtils.hpp"
 #include "Callbacks.hpp"
-#include <CGAL/Polygon_mesh_processing/border.h>
+#include <CGAL/boost/graph/border.h>
 #include <CGAL/Polygon_mesh_processing/manifoldness.h>
 #include <CGAL/Polygon_mesh_processing/repair_degeneracies.h>
 #include <CGAL/Polygon_mesh_processing/repair_polygon_soup.h>
@@ -74,7 +74,7 @@ inline BoundaryEdgeStats ComputeBoundaryEdgeStats(const cgalutils::CGALMesh& cga
     using HalfedgeDescriptor = boost::graph_traits<CGALMesh>::halfedge_descriptor;
 
     std::vector<HalfedgeDescriptor> border_cycles;
-    PMP::extract_boundary_cycles(cgal_mesh, std::back_inserter(border_cycles));
+    CGAL::extract_boundary_cycles(cgal_mesh, std::back_inserter(border_cycles));
 
     BoundaryEdgeStats stats;
     stats.cycle_count = border_cycles.size();

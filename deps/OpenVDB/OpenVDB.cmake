@@ -16,6 +16,8 @@ orcaslicer_add_cmake_project(OpenVDB
     DEPENDS dep_TBB dep_Blosc dep_OpenEXR dep_Boost
     CMAKE_ARGS
         -DCMAKE_CXX_STANDARD=17
+        # Match OrcaSlicer and the other Windows dependencies' DLL runtime.
+        -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL
         -DOPENVDB_ABI_VERSION_NUMBER=13
         -DCMAKE_POSITION_INDEPENDENT_CODE=ON 
         -DOPENVDB_BUILD_PYTHON_MODULE=OFF
@@ -34,7 +36,7 @@ if (MSVC)
         ExternalProject_Add_Step(dep_OpenVDB build_debug
             DEPENDEES build
             DEPENDERS install
-            COMMAND ${CMAKE_COMMAND} ../dep_OpenVDB -DOPENVDB_BUILD_VDB_PRINT=OFF
+            COMMAND ${CMAKE_COMMAND} ../dep_OpenVDB -DOPENVDB_BUILD_VDB_PRINT=OFF -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebugDLL
             COMMAND msbuild /m /P:Configuration=Debug INSTALL.vcxproj
             WORKING_DIRECTORY "${BINARY_DIR}"
         )

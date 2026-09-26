@@ -240,6 +240,7 @@ if (NOT IS_CROSS_COMPILE OR NOT APPLE)
             -DCMAKE_SHARED_LINKER_FLAGS:STRING=${CMAKE_SHARED_LINKER_FLAGS}
             -DCMAKE_MODULE_LINKER_FLAGS:STRING=${CMAKE_MODULE_LINKER_FLAGS}
             -DBUILD_SHARED_LIBS:BOOL=OFF
+            -DZLIB_USE_STATIC_LIBS:BOOL=ON
             ${_cmake_osx_arch}
             "${_configs_line}"
             ${DEP_CMAKE_OPTS}
@@ -287,6 +288,7 @@ else()
             -DCMAKE_CXX_COMPILER_LAUNCHER:STRING=${CMAKE_CXX_COMPILER_LAUNCHER}
             -DCMAKE_USER_MAKE_RULES_OVERRIDE:STRING=${CMAKE_USER_MAKE_RULES_OVERRIDE}
             -DBUILD_SHARED_LIBS:BOOL=OFF
+            -DZLIB_USE_STATIC_LIBS:BOOL=ON
             ${_cmake_osx_arch}
             "${_configs_line}"
             ${DEP_CMAKE_OPTS}

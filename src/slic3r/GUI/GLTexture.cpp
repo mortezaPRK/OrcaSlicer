@@ -40,7 +40,7 @@
 #include <wx/intl.h>
 #include "FileHelp.hpp"
 #define STB_DXT_IMPLEMENTATION
-#include "stb_dxt/stb_dxt.h"
+#include "stb_dxt/ryg_dxt.h"
 
 #include "nanosvg/nanosvg.h"
 #include "nanosvg/nanosvgrast.h"
@@ -133,9 +133,8 @@ void GLTexture::Compressor::compress()
         if (m_abort_compressing)
             break;
 
-        // stb_dxt library, despite claiming that the needed size of the destination buffer is equal to (source buffer size)/4,
-        // crashes if doing so, requiring a minimum of 64 bytes and up to a third of the source buffer size, so we set the destination buffer initial size to be half the source buffer size
-        level.compressed_data = std::vector<unsigned char>(std::max((unsigned int)64, (unsigned int)level.src_data.size() / 2), 0);
+        // DXT5 stores 16 bytes per 4x4 block, including partial mipmap blocks.
+        level.compressed_data.resize(((size_t(level.w) + 3) / 4) * ((size_t(level.h) + 3) / 4) * 16);
         int compressed_size = 0;
         rygCompress(level.compressed_data.data(), level.src_data.data(), level.w, level.h, 1, compressed_size);
         level.compressed_data.resize(compressed_size);

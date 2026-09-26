@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.0)
-project(GLEW)
+cmake_minimum_required(VERSION 3.13)
+project(GLEW VERSION 2.3.1)
 
 find_package(OpenGL REQUIRED)
 

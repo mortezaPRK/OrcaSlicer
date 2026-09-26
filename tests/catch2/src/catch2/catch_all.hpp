@@ -68,7 +68,7 @@
 #include <catch2/internal/catch_decomposer.hpp>
 #include <catch2/internal/catch_deprecation_macro.hpp>
 #include <catch2/internal/catch_enforce.hpp>
-#include <catch2/internal/catch_enum_values_registry.hpp>
+#include <catch2/internal/catch_enum_info.hpp>
 #include <catch2/internal/catch_errno_guard.hpp>
 #include <catch2/internal/catch_exception_translator_registry.hpp>
 #include <catch2/internal/catch_fatal_condition_handler.hpp>
@@ -89,6 +89,7 @@
 #include <catch2/internal/catch_optional.hpp>
 #include <catch2/internal/catch_output_redirect.hpp>
 #include <catch2/internal/catch_parse_numbers.hpp>
+#include <catch2/internal/catch_path_filter.hpp>
 #include <catch2/internal/catch_platform.hpp>
 #include <catch2/internal/catch_polyfills.hpp>
 #include <catch2/internal/catch_preprocessor.hpp>
@@ -122,6 +123,7 @@
 #include <catch2/internal/catch_test_registry.hpp>
 #include <catch2/internal/catch_test_spec_parser.hpp>
 #include <catch2/internal/catch_textflow.hpp>
+#include <catch2/internal/catch_thread_local.hpp>
 #include <catch2/internal/catch_thread_support.hpp>
 #include <catch2/internal/catch_to_string.hpp>
 #include <catch2/internal/catch_uncaught_exceptions.hpp>

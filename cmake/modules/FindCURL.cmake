@@ -30,6 +30,12 @@
 # ``CURL_VERSION_STRING``
 #   The version of curl found.
 
+# Modern curl exports its complete static link dependencies and frameworks.
+find_package(CURL ${CURL_FIND_VERSION} CONFIG QUIET)
+if(CURL_FOUND)
+  return()
+endif()
+
 # Look for the header file.
 find_path(CURL_INCLUDE_DIR NAMES curl/curl.h)
 mark_as_advanced(CURL_INCLUDE_DIR)
