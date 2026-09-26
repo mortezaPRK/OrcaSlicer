@@ -910,23 +910,17 @@ if (SLIC3R_STATIC AND NOT SLIC3R_STATIC_EXCLUDE_CURL)
     endif()
 endif()
 
-## OPTIONAL packages
-
-# Find expat or use bundled version
-# Always use the system libexpat on Linux.
-
-find_package(EXPAT)
-
-if (NOT EXPAT_FOUND)
-    add_library(expat STATIC
-        ${LIBDIR}/expat/xmlparse.c
-        ${LIBDIR}/expat/xmlrole.c
-        ${LIBDIR}/expat/xmltok.c
-    )
-    set(EXPAT_FOUND 1)
-    set(EXPAT_INCLUDE_DIRS ${LIBDIR}/expat/)
-    set(EXPAT_LIBRARIES expat)
-endif ()
+# Prefer Expat's exported target: FindEXPAT mistakes its static /MD library
+# for a shared build on Windows and only searches for the /MT variant.
+find_package(expat CONFIG QUIET)
+if(TARGET expat::expat)
+    add_library(EXPAT::EXPAT ALIAS expat::expat)
+else()
+    if(SLIC3R_STATIC)
+        set(EXPAT_USE_STATIC_LIBS ON)
+    endif()
+    find_package(EXPAT REQUIRED)
+endif()
 
 find_package(PNG REQUIRED)
 
