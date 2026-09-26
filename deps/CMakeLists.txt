@@ -489,6 +489,7 @@ set(_dep_list
     ${CURL_PKG}
     ${WXWIDGETS_PKG}
     dep_Cereal
+    dep_Qhull
     dep_Draco
     dep_NLopt
     dep_OpenVDB
@@ -510,15 +511,6 @@ set(_dep_list
     dep_Assimp
     ${DATACHANNEL_PKG}
     )
-
-if (MSVC)
-    # Experimental
-    #list(APPEND _dep_list "dep_qhull")
-else()
-    list(APPEND _dep_list "dep_Qhull")
-    # Not working, static build has different Eigen
-    #list(APPEND _dep_list "dep_libigl")
-endif()
 
 add_custom_target(deps ALL DEPENDS ${_dep_list})
 
