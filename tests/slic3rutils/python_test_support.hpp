@@ -14,14 +14,18 @@
 
 #include <slic3r/plugin/PythonPluginBridge.hpp>
 
+inline std::unique_ptr<pybind11::scoped_interpreter>& test_python_interpreter()
+{
+    static std::unique_ptr<pybind11::scoped_interpreter> interpreter;
+    return interpreter;
+}
+
 namespace {
 
 void ensure_python_initialized()
 {
     if (Py_IsInitialized())
         return;
-
-    static std::unique_ptr<pybind11::scoped_interpreter> interpreter;
 
     PyConfig config;
     PyConfig_InitPythonConfig(&config);
@@ -47,7 +51,7 @@ void ensure_python_initialized()
         }
     }
 
-    interpreter = std::make_unique<pybind11::scoped_interpreter>(&config);
+    test_python_interpreter() = std::make_unique<pybind11::scoped_interpreter>(&config);
 }
 
 pybind11::module_ import_orca_module()

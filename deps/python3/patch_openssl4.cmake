@@ -4,6 +4,7 @@ endif()
 
 set(_ssl_source "${PYTHON_SOURCE_DIR}/Modules/_ssl.c")
 file(READ "${_ssl_source}" _source)
+set(_original_source "${_source}")
 
 set(_old "#if defined(SSL3_VERSION) && !defined(OPENSSL_NO_SSL3)")
 set(_new "#if defined(SSL3_VERSION) && OPENSSL_VERSION_MAJOR < 4 && !defined(OPENSSL_NO_SSL3)")
@@ -17,14 +18,28 @@ endif()
 foreach(_version TLS1 TLS1_1 TLS1_2)
     set(_old "defined(${_version}_VERSION) &&")
     set(_new "defined(${_version}_VERSION) && OPENSSL_VERSION_MAJOR < 4 &&")
-    string(FIND "${_source}" "${_old}" _position)
+    string(FIND "${_source}" "${_new}" _position)
     if(_position EQUAL -1)
-        if(NOT _source MATCHES "defined\\(${_version}_VERSION\\) && OPENSSL_VERSION_MAJOR < 4")
+        string(FIND "${_source}" "${_old}" _position)
+        if(_position EQUAL -1)
             message(FATAL_ERROR "Could not find CPython ${_version} SSL method guard in ${_ssl_source}")
         endif()
-    else()
         string(REPLACE "${_old}" "${_new}" _source "${_source}")
     endif()
 endforeach()
 
-file(WRITE "${_ssl_source}" "${_source}")
+if(NOT _source STREQUAL _original_source)
+    file(WRITE "${_ssl_source}" "${_source}")
+endif()
+
+# Static OpenSSL also needs these Windows system libraries. The property sheet
+# is unused by Unix builds; keep the patch identical across platforms.
+set(_openssl_props "${PYTHON_SOURCE_DIR}/PCbuild/openssl.props")
+file(READ "${_openssl_props}" _props)
+set(_original_props "${_props}")
+string(REPLACE "ws2_32.lib;libcrypto.lib;libssl.lib;"
+               "ws2_32.lib;crypt32.lib;bcrypt.lib;libcrypto.lib;libssl.lib;"
+               _props "${_props}")
+if(NOT _props STREQUAL _original_props)
+    file(WRITE "${_openssl_props}" "${_props}")
+endif()

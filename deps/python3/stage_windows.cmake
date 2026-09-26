@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
 
-set(_python_abi "312")
-
-foreach(_var PYTHON_SOURCE_DIR PYTHON_BUILD_DIR PYTHON_DEST_DIR PYTHON_LAYOUT_ARCH)
+foreach(_var PYTHON_SOURCE_DIR PYTHON_BUILD_DIR PYTHON_DEST_DIR PYTHON_LAYOUT_ARCH PYTHON_ABI)
     if(NOT DEFINED ${_var} OR "${${_var}}" STREQUAL "")
         message(FATAL_ERROR "${_var} is required")
     endif()
@@ -47,8 +45,8 @@ set(_required_files
     "${PYTHON_DEST_DIR}/Lib/encodings/__init__.py"
     "${PYTHON_DEST_DIR}/include/Python.h"
     "${PYTHON_DEST_DIR}/python.exe"
-    "${PYTHON_DEST_DIR}/python${_python_abi}.dll"
-    "${PYTHON_DEST_DIR}/libs/python${_python_abi}.lib"
+    "${PYTHON_DEST_DIR}/python${PYTHON_ABI}.dll"
+    "${PYTHON_DEST_DIR}/libs/python${PYTHON_ABI}.lib"
 )
 
 foreach(_required_file IN LISTS _required_files)

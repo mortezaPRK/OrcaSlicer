@@ -1,7 +1,49 @@
 #include <catch2/catch_all.hpp>
+#include "python_test_support.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 #include "slic3r/Utils/Http.hpp"
+#include "slic3r/Utils/OrcaCloudServiceAgent.hpp"
+
+int main(int argc, char** argv)
+{
+    const int result = Catch::Session().run(argc, argv);
+    // Finalize while pybind11's internal statics and mutexes are still alive.
+    test_python_interpreter().reset();
+    return result;
+}
+
+namespace {
+
+nlohmann::json flat_session_json(const nlohmann::json& fields)
+{
+    nlohmann::json session = {
+        {"access_token", "test-token"},
+        {"user_id", "test-user-id"}
+    };
+    session.update(fields);
+    return session;
+}
+
+nlohmann::json nested_session_json(const nlohmann::json& metadata)
+{
+    return {
+        {"access_token", "test-token"},
+        {"user", {
+            {"id", "test-user-id"},
+            {"user_metadata", metadata}
+        }}
+    };
+}
+
+std::string resolved_display_name(const nlohmann::json& session)
+{
+    Slic3r::OrcaCloudServiceAgent agent("");
+    REQUIRE(agent.set_user_session(session, false));
+    return agent.get_user_nickname();
+}
+
+} // namespace
 
 TEST_CASE("Check SSL certificates paths", "[Http][NotWorking]") {
     
@@ -58,4 +100,3 @@ TEST_CASE("Http basic authentication", "[Http][NotWorking]") {
 
     REQUIRE(status == 200);
 }
-

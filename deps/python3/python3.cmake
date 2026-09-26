@@ -4,6 +4,7 @@ ProcessorCount(NPROC)
 
 set(_python_version "3.14.7")
 string(REGEX REPLACE "^([0-9]+\\.[0-9]+)\\..*" "\\1" _python_version_short "${_python_version}")
+string(REPLACE "." "" _python_abi "${_python_version_short}")
 set(_python_url "https://www.python.org/ftp/python/${_python_version}/Python-${_python_version}.tar.xz")
 set(_python_sha256 "3b48dac8fb59f62eaa67ac83c1eb12bda1b7a08406dd286e252c11a66be27f81")
 
@@ -11,21 +12,11 @@ set(_python_sha256 "3b48dac8fb59f62eaa67ac83c1eb12bda1b7a08406dd286e252c11a66be2
 set(_patch_cmd ${CMAKE_COMMAND}
     -DPYTHON_SOURCE_DIR=<SOURCE_DIR>
     -P ${CMAKE_CURRENT_LIST_DIR}/patch_openssl4.cmake)
-if(WIN32 AND _python_version MATCHES "^3\\.12\\.")
+if(WIN32)
 
-    # Fix python build failure on Windows if python is not available, due to wrong nuget download URL
-    # See https://github.com/python/cpython/issues/153438
-    # Patch from https://github.com/python/cpython/pull/153608
-    # This patch has not been merged to 3.12 yet so we need to apply it manually
-    #
-    # Without core.autocrlf=false the patched find_python.bat comes out LF and
-    # cmd.exe cannot find its goto labels.
-    set(_patch_cmd git init
-                   && ${GIT_EXECUTABLE} -c core.autocrlf=false apply --verbose
-                      --ignore-space-change --whitespace=fix
-                      ${CMAKE_CURRENT_LIST_DIR}/01-windows-nuget.patch)
-
-    if(MSVC_VERSION EQUAL 1800)
+    if(DEFINED ENV{VisualStudioVersion} AND "$ENV{VisualStudioVersion}" VERSION_GREATER_EQUAL "18.0")
+        set(_python_platform_toolset v145)
+    elseif(MSVC_VERSION EQUAL 1800)
         set(_python_platform_toolset v120)
     elseif(MSVC_VERSION EQUAL 1900)
         set(_python_platform_toolset v140)
@@ -74,8 +65,12 @@ if(WIN32 AND _python_version MATCHES "^3\\.12\\.")
     # PreferredToolArchitecture pins it to x64. Scoped to this build step, so
     # CPython's own sources stay untouched.
     set(_python_env_args "GIT_CEILING_DIRECTORIES=<SOURCE_DIR>/..")
-    if(CMAKE_GENERATOR_INSTANCE)   # empty for non-VS generators (e.g. Ninja)
-        set(_python_msbuild "${CMAKE_GENERATOR_INSTANCE}/MSBuild/Current/Bin/${_python_msbuild_host}/MSBuild.exe")
+    set(_python_vs_instance "${CMAKE_GENERATOR_INSTANCE}")
+    if(NOT _python_vs_instance AND DEFINED ENV{VSINSTALLDIR})
+        file(TO_CMAKE_PATH "$ENV{VSINSTALLDIR}" _python_vs_instance)
+    endif()
+    if(_python_vs_instance)
+        set(_python_msbuild "${_python_vs_instance}/MSBuild/Current/Bin/${_python_msbuild_host}/MSBuild.exe")
         if(EXISTS "${_python_msbuild}")
             file(TO_NATIVE_PATH "${_python_msbuild}" _python_msbuild_native)
             list(APPEND _python_env_args "MSBUILD=${_python_msbuild_native}")
@@ -92,6 +87,11 @@ if(WIN32 AND _python_version MATCHES "^3\\.12\\.")
 
     # MSBuild reads extra switches from PCbuild/msbuild.rsp.
     set(_python_rsp "/p:PlatformToolset=${_python_platform_toolset}\n")
+    # Use the same OpenSSL 4 headers and static libraries as the slicer.
+    string(APPEND _python_rsp
+        "/p:opensslIncludeDir=\"${DESTDIR}/include\"\n"
+        "/p:opensslOutDir=\"${DESTDIR}/lib\"\n"
+        "/p:SkipCopySSLDLL=true\n")
     # VS 2026's ARM64 code generator needs about 27 GB for one function in
     # Objects/unicodectype.c (python/cpython#153668); the property sheet compiles
     # that file without optimisation.
@@ -101,6 +101,9 @@ if(WIN32 AND _python_version MATCHES "^3\\.12\\.")
     endif()
     file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/python3-msbuild.rsp" "${_python_rsp}")
     set(_conf_cmd
+        ${CMAKE_COMMAND} -DPYTHON_SOURCE_DIR=<SOURCE_DIR>
+            -P ${CMAKE_CURRENT_LIST_DIR}/patch_openssl4.cmake
+        COMMAND
         ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/python3-msbuild.rsp" <SOURCE_DIR>/PCbuild/msbuild.rsp
     )
     set(_build_cmd
@@ -116,6 +119,7 @@ if(WIN32 AND _python_version MATCHES "^3\\.12\\.")
             -DPYTHON_BUILD_DIR=<SOURCE_DIR>/PCbuild/${_python_pcbuild_output_dir}
             -DPYTHON_DEST_DIR=${DESTDIR}/libpython
             -DPYTHON_LAYOUT_ARCH=${_python_layout_arch}
+            -DPYTHON_ABI=${_python_abi}
             -P ${CMAKE_CURRENT_LIST_DIR}/stage_windows.cmake
     )
 elseif(APPLE)

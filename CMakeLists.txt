@@ -137,6 +137,7 @@ set(ORCA_UV_SHA256_aarch64-unknown-linux-gnu "88e800834007cc5efd4675f166eb2a51e7
 set(ORCA_UV_SHA256_x86_64-unknown-linux-gnu  "8c88519b0ef0af9801fcdee419bbb12116bd9e6b18e162ae093c932d8b264050")
 set(ORCA_UV_SHA256_aarch64-pc-windows-msvc   "74e443f8004022dde57a1bd0d10c097830f9ea8feb4ec927db52cd5d805c2f48")
 set(ORCA_UV_SHA256_x86_64-pc-windows-msvc    "ace861f360c6de2babedc1607d0f454b6b09a820dbc8182dc15af927e4df9589")
+set(ORCA_UV_SHA256_aarch64-pc-windows-msvc   "74e443f8004022dde57a1bd0d10c097830f9ea8feb4ec927db52cd5d805c2f48")
 
 # Version-scoped cache dir so a version bump invalidates the cached binary.
 set(ORCA_UV_DOWNLOAD_DIR "${CMAKE_BINARY_DIR}/.uv/${ORCA_UV_VERSION}")
@@ -988,8 +989,8 @@ find_package(NLopt 1.4 REQUIRED)
 
 # Use bundled Python from deps instead of system Python
 set(_bundled_python_version "3.14.7")
-set(_bundled_python_abi "312")
 string(REGEX REPLACE "^([0-9]+\\.[0-9]+)\\..*$" "\\1" _bundled_python_version_short "${_bundled_python_version}")
+string(REPLACE "." "" _bundled_python_abi "${_bundled_python_version_short}")
 set(_bundled_python_root "${CMAKE_PREFIX_PATH}/libpython")
 set(Python3_ROOT_DIR "${_bundled_python_root}" CACHE PATH "Root directory for bundled Python" FORCE)
 set(Python3_USE_STATIC_LIBS OFF)
