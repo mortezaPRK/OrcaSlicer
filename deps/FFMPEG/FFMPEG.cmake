@@ -14,10 +14,12 @@ endif()
 if (MSVC)
     set(_source_dir "${CMAKE_BINARY_DIR}/dep_FFMPEG-prefix/src/dep_FFMPEG")
 
-    set(PREBUILD_URL_arm64 "https://github.com/Noisyfox/FFmpeg-Builds-Orca/releases/download/autobuild-2026-09-18-16-50/ffmpeg-n7.0.3-33-g887d4b4919-winarm64-orca-shared-7.0.zip")
-    set(PREBUILD_HASH_arm64 "da480cbb39680056de824c57ec4dc3bd577b479ebbc310ff1f9dc55cf014b4c1")
-    set(PREBUILD_URL_x64 "https://github.com/Noisyfox/FFmpeg-Builds-Orca/releases/download/autobuild-2026-09-18-16-50/ffmpeg-n7.0.3-33-g887d4b4919-win64-orca-shared-7.0.zip")
-    set(PREBUILD_HASH_x64 "85da19daf198f5548259d8aabb349db84997a3f6e6886d8d7764114add9c6dae")
+    # The September 25 and 26 ARM64 builds crash in avcodec's TLS initializer,
+    # including when launching their own ffmpeg.exe. Keep the tested 9.0.2 build.
+    set(PREBUILD_URL_arm64 "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-09-21-13-55/ffmpeg-n9.0.2-3-ga5923073bf-winarm64-lgpl-shared-9.0.zip")
+    set(PREBUILD_HASH_arm64 "08a62bdd6dadd556cf29e5e0602a18f355e9fd8bbb5a96268de489cc48466718")
+    set(PREBUILD_URL_x64 "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-09-26-13-03/ffmpeg-n9.0.2-10-g51c4a23d74-win64-lgpl-shared-9.0.zip")
+    set(PREBUILD_HASH_x64 "8f3a5190804eed8c0f4927dbac688bcc35a1d2b9c36d7bf9a4386ec7bd1627ed")
 
     ExternalProject_Add(dep_FFMPEG
         ${_ffmpeg_depends}
