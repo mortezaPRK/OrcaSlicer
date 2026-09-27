@@ -290,6 +290,7 @@ else()
 endif()
 
 ExternalProject_Add(dep_python3
+    DEPENDS ${OPENSSL_PKG} ${ZLIB_PKG}
     URL "${_python_url}"
     URL_HASH SHA256=${_python_sha256}
     PATCH_COMMAND ${_patch_cmd}
@@ -304,12 +305,4 @@ ExternalProject_Add_StepDependencies(dep_python3 patch
 if(WIN32)
     ExternalProject_Add_StepDependencies(dep_python3 configure
         "${CMAKE_CURRENT_BINARY_DIR}/python3-msbuild.rsp")
-endif()
-
-# Python depends on OpenSSL and ZLIB
-if(TARGET dep_OpenSSL)
-    add_dependencies(dep_python3 dep_OpenSSL)
-endif()
-if(TARGET dep_ZLIB)
-    add_dependencies(dep_python3 dep_ZLIB)
 endif()

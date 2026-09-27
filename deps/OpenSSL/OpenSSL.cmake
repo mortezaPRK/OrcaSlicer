@@ -17,16 +17,20 @@ else()
 endif()
 
 if(WIN32)
+    # Resolve native MSVC tools from the developer environment. /FS serializes
+    # writes to OpenSSL's shared compiler PDB.
     set(_openssl_msvc_env CC=cl CXX=cl RC=rc CL=/FS)
-    # OpenSSL's perl Configure honors the CC environment variable, but the
-    # VC-WIN64A makefile only works with cl (an unquoted clang-cl path with
-    # spaces, e.g. exported by CLion, silently produces no .obj files and the
-    # lib step fails with LNK1181). Pin the upstream toolchain.
-    # Keep rc.exe resolved from the MSVC developer environment as well. The
-    # absolute Windows SDK path contains spaces and OpenSSL 1.1.1 writes it to
-    # the generated nmake file without quoting, which skips .res generation.
-    # /FS serializes access to OpenSSL's shared generated PDB when cl is
-    # driven through nmake from a Ninja configure step.
+    if(DEPS_ARCH STREQUAL "arm64" AND CMAKE_C_COMPILER_ID STREQUAL "Clang")
+        # MSVC 19.51 miscompiles the TLS extension parser's ARM64 prologue.
+        # OpenSSL 4 quotes the selected compiler's path in its nmake file.
+        set(_openssl_msvc_env
+            "CC=${CMAKE_C_COMPILER}"
+            "CXX=${CMAKE_CXX_COMPILER}"
+            RC=rc)
+        if(NOT DEFINED OPENSSL_ARCH)
+            set(_cross_arch "VC-CLANG-WIN64-CLANGASM-ARM")
+        endif()
+    endif()
     set(_conf_cmd ${CMAKE_COMMAND} -E env ${_openssl_msvc_env} perl Configure )
     set(_cross_comp_prefix_line "")
     if("${DEPS_ARCH}" STREQUAL "arm64")
@@ -38,8 +42,12 @@ if(WIN32)
         # appends /Gs4096 after /Gs0, and the later option wins.
         set(_openssl_extra_cflags /Gs4096)
     endif()
-    set(_make_cmd ${CMAKE_COMMAND} -E env ${_openssl_msvc_env} nmake)
-    set(_install_cmd ${CMAKE_COMMAND} -E env ${_openssl_msvc_env} nmake install_sw )
+    # Build the installed libraries and tools without unused upstream test executables.
+    set(_make_cmd ${CMAKE_COMMAND} -E env ${_openssl_msvc_env} nmake build_inst_sw)
+    set(_install_cmd
+        ${CMAKE_COMMAND} -DOPENSSL_MAKEFILE=<SOURCE_DIR>/makefile
+            -P ${CMAKE_CURRENT_LIST_DIR}/patch_windows_install.cmake
+        COMMAND ${CMAKE_COMMAND} -E env ${_openssl_msvc_env} nmake install_sw)
 else()
     if(APPLE)
         set(_conf_cmd export MACOSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET} && ./Configure -mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET})
@@ -90,8 +98,12 @@ ExternalProject_Add(dep_OpenSSL
     INSTALL_COMMAND ${_install_cmd}
 )
 
+if(WIN32)
+    ExternalProject_Add_StepDependencies(dep_OpenSSL install
+        "${CMAKE_CURRENT_LIST_DIR}/patch_windows_install.cmake")
+endif()
+
 if (CMAKE_GENERATOR MATCHES "Visual Studio")
-    # OpenSSL builds with cl, but MSBuild runs nmake in this project's toolset
-    # environment, and ClangCL's puts clang's headers first. Use the default.
+    # nmake needs the native MSVC/SDK tools even when the C compiler is Clang.
     set_target_properties(dep_OpenSSL PROPERTIES VS_PLATFORM_TOOLSET "$(DefaultPlatformToolset)")
 endif ()
