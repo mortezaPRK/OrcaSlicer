@@ -418,7 +418,6 @@ include(Draco/Draco.cmake)
 # 3.1 has everything in the right place, but the md5 funcs used are deprecated
 # a grep across the repo shows it is used for other things
 # TODO: update openssl and everything that uses <openssl/md5.h>
-include(FFMPEG/FFMPEG.cmake)
 include(Assimp/Assimp.cmake)
 
 
@@ -428,6 +427,8 @@ if(NOT OPENSSL_FOUND)
     include(OpenSSL/OpenSSL.cmake)
     set(OPENSSL_PKG dep_OpenSSL)
 endif()
+
+include(FFMPEG/FFMPEG.cmake)
 
 include(DataChannel/DataChannel.cmake)
 set(DATACHANNEL_PKG dep_DataChannel)
