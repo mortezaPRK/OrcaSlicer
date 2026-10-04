@@ -429,9 +429,6 @@ if(NOT OPENSSL_FOUND)
     set(OPENSSL_PKG dep_OpenSSL)
 endif()
 
-include(FFMPEG/FFMPEG.cmake)
-include(Assimp/Assimp.cmake)
-
 include(DataChannel/DataChannel.cmake)
 set(DATACHANNEL_PKG dep_DataChannel)
 
