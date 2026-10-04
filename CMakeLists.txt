@@ -1186,41 +1186,22 @@ function(orcaslicer_copy_sos target config postfix output_sos)
         set(_out_dir "${CMAKE_CURRENT_BINARY_DIR}")
     endif ()
 
-    file(COPY ${CMAKE_PREFIX_PATH}/lib/libavformat.so
-            ${CMAKE_PREFIX_PATH}/lib/libavformat.so.61
-            ${CMAKE_PREFIX_PATH}/lib/libavformat.so.61.1.100
-            ${CMAKE_PREFIX_PATH}/lib/libavcodec.so
-            ${CMAKE_PREFIX_PATH}/lib/libavcodec.so.61
-            ${CMAKE_PREFIX_PATH}/lib/libavcodec.so.61.3.100
-            ${CMAKE_PREFIX_PATH}/lib/libavutil.so
-            ${CMAKE_PREFIX_PATH}/lib/libavutil.so.59
-            ${CMAKE_PREFIX_PATH}/lib/libavutil.so.59.8.100
-            ${CMAKE_PREFIX_PATH}/lib/libswscale.so
-            ${CMAKE_PREFIX_PATH}/lib/libswscale.so.8
-            ${CMAKE_PREFIX_PATH}/lib/libswscale.so.8.1.100
-            ${CMAKE_PREFIX_PATH}/lib/libswresample.so
-            ${CMAKE_PREFIX_PATH}/lib/libswresample.so.5
-            ${CMAKE_PREFIX_PATH}/lib/libswresample.so.5.1.100
-         DESTINATION ${_out_dir})
+    file(GLOB _ffmpeg_sos
+        "${CMAKE_PREFIX_PATH}/lib/libavformat.so*"
+        "${CMAKE_PREFIX_PATH}/lib/libavcodec.so*"
+        "${CMAKE_PREFIX_PATH}/lib/libavutil.so*"
+        "${CMAKE_PREFIX_PATH}/lib/libswscale.so*"
+        "${CMAKE_PREFIX_PATH}/lib/libswresample.so*")
+    if (_ffmpeg_sos)
+        file(COPY ${_ffmpeg_sos} DESTINATION "${_out_dir}")
+    endif ()
 
-    set(${output_sos}
-        ${_out_dir}/libavformat.so
-        ${_out_dir}/libavformat.so.61
-        ${_out_dir}/libavformat.so.61.1.100
-        ${_out_dir}/libavcodec.so
-        ${_out_dir}/libavcodec.so.61
-        ${_out_dir}/libavcodec.so.61.3.100
-        ${_out_dir}/libavutil.so
-        ${_out_dir}/libavutil.so.59
-        ${_out_dir}/libavutil.so.59.8.100
-        ${_out_dir}/libswscale.so
-        ${_out_dir}/libswscale.so.8
-        ${_out_dir}/libswscale.so.8.1.100
-        ${_out_dir}/libswresample.so
-        ${_out_dir}/libswresample.so.5
-        ${_out_dir}/libswresample.so.5.1.100
-        PARENT_SCOPE
-    )
+    set(_ffmpeg_output_sos)
+    foreach (_ffmpeg_so IN LISTS _ffmpeg_sos)
+        get_filename_component(_ffmpeg_name "${_ffmpeg_so}" NAME)
+        list(APPEND _ffmpeg_output_sos "${_out_dir}/${_ffmpeg_name}")
+    endforeach ()
+    set(${output_sos} ${_ffmpeg_output_sos} PARENT_SCOPE)
 endfunction()
 
 # Bundled sources set their own warning flags, and a plain -Wall there means /Wall
@@ -1343,19 +1324,13 @@ else ()
 endif ()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    set(LIBRARY_FILES
-    ${LIBDIR_BIN}/libavformat.so.61
-    ${LIBDIR_BIN}/libavformat.so.61.1.100
-    ${LIBDIR_BIN}/libavcodec.so.61
-    ${LIBDIR_BIN}/libavcodec.so.61.3.100
-    ${LIBDIR_BIN}/libavutil.so.59
-    ${LIBDIR_BIN}/libavutil.so.59.8.100
-    ${LIBDIR_BIN}/libswresample.so.5
-    ${LIBDIR_BIN}/libswresample.so.5.1.100
-    ${LIBDIR_BIN}/libswscale.so.8
-    ${LIBDIR_BIN}/libswscale.so.8.1.100
-    )
-    install(FILES ${LIBRARY_FILES} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
+    file(GLOB _ffmpeg_runtime_sos
+        "${LIBDIR_BIN}/libavformat.so*"
+        "${LIBDIR_BIN}/libavcodec.so*"
+        "${LIBDIR_BIN}/libavutil.so*"
+        "${LIBDIR_BIN}/libswresample.so*"
+        "${LIBDIR_BIN}/libswscale.so*")
+    install(FILES ${_ffmpeg_runtime_sos} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
 endif ()
 
 install(FILES ${CMAKE_SOURCE_DIR}/LICENSE.txt DESTINATION ".")

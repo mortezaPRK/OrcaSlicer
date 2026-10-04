@@ -27,7 +27,6 @@
 #include <boost/property_map/property_map.hpp>
 #include <CGAL/Polygon_mesh_processing/self_intersections.h>
 #include <CGAL/AABB_face_graph_triangle_primitive.h>
-#include <CGAL/AABB_traits.h>
 #include <CGAL/AABB_tree.h>
 #include <CGAL/boost/graph/graph_traits_Surface_mesh.h>
 #include <iterator>

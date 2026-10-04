@@ -26,6 +26,7 @@ if (APPLE AND IS_CROSS_COMPILE)
             -DCMAKE_INSTALL_PREFIX:STRING=${DESTDIR}
             -DBUILD_SHARED_LIBS:BOOL=OFF
             -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+            -DOPENEXR_FORCE_INTERNAL_ZSTD:BOOL=ON
             -DBUILD_TESTING=OFF 
             -DPYILMBASE_ENABLE:BOOL=OFF 
             -DOPENEXR_VIEWERS_ENABLE:BOOL=OFF
@@ -51,6 +52,7 @@ orcaslicer_add_cmake_project(OpenEXR
         -DOPENEXR_VIEWERS_ENABLE:BOOL=OFF
         -DOPENEXR_BUILD_UTILS:BOOL=OFF
         -DOPENEXR_IMATH_TAG:STRING=v3.2.3
+        -DOPENEXR_FORCE_INTERNAL_ZSTD:BOOL=ON
         ${_openexr_offline_imath}
         ${_openexr_arm64_args}
 )
