@@ -19,6 +19,13 @@ if ("${DEPS_ARCH}" STREQUAL "arm64" AND CMAKE_CXX_COMPILER_ID STREQUAL Clang)
         ${CMAKE_CURRENT_LIST_DIR}/patch_clang_neon.cmake)
 endif ()
 
+# OpenCV's KleidiCV HAL adds ARM NEON translation units even when cross
+# compiling the x86_64 macOS dependency bundle from an ARM runner.
+set(_disable_kleidicv "")
+if (APPLE AND "${DEPS_ARCH}" STREQUAL "x86_64")
+    set(_disable_kleidicv "-DWITH_KLEIDICV=OFF")
+endif ()
+
 orcaslicer_add_cmake_project(OpenCV
     ${_options}
     URL https://github.com/opencv/opencv/archive/refs/tags/5.0.0.tar.gz
@@ -89,6 +96,7 @@ orcaslicer_add_cmake_project(OpenCV
        -DWITH_WIN32UI=OFF
        -DHAVE_WIN32UI=FALSE
        ${_disable_carotene}
+       ${_disable_kleidicv}
 )
 
 if(_opencv_patch_command)
