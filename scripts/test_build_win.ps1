@@ -930,6 +930,12 @@ function Test-Case {
             $problems += "created '$path'"
         }
     }
+    if ($problems.Count -gt 0) {
+        $outputLines = @($result.Output -split "`r?`n" | Where-Object { $_ })
+        foreach ($line in @($outputLines | Select-Object -Last 12)) {
+            $problems += "output: $line"
+        }
+    }
     return ,$problems
 }
 
