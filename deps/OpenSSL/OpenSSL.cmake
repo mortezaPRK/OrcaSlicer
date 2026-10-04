@@ -42,12 +42,13 @@ if(WIN32)
         # appends /Gs4096 after /Gs0, and the later option wins.
         set(_openssl_extra_cflags /Gs4096)
     endif()
-    # Build the installed libraries and tools without unused upstream test executables.
-    set(_make_cmd ${CMAKE_COMMAND} -E env ${_openssl_msvc_env} nmake build_inst_sw)
+    # Build the libraries only. The openssl.exe app has no runtime use in OrcaSlicer
+    # and OpenSSL 4's app target does not compile with the clang-cl ARM config.
+    set(_make_cmd ${CMAKE_COMMAND} -E env ${_openssl_msvc_env} nmake build_libs)
     set(_install_cmd
         ${CMAKE_COMMAND} -DOPENSSL_MAKEFILE=<SOURCE_DIR>/makefile
             -P ${CMAKE_CURRENT_LIST_DIR}/patch_windows_install.cmake
-        COMMAND ${CMAKE_COMMAND} -E env ${_openssl_msvc_env} nmake install_sw)
+        COMMAND ${CMAKE_COMMAND} -E env ${_openssl_msvc_env} nmake install_dev)
 else()
     if(APPLE)
         set(_conf_cmd export MACOSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET} && ./Configure -mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET})
