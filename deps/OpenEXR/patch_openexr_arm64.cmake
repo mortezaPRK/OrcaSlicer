@@ -1,5 +1,6 @@
 # clang-cl provides ARM NEON intrinsics through arm_neon.h. Microsoft's
-# arm64_neon.h wrappers reference MSVC-only neon_* intrinsics at link time.
+# arm64_neon.h wrappers and MSVC-only SSE4.1 selection are not compatible with
+# clang-cl's target feature defaults.
 set(_zip "src/lib/OpenEXRCore/internal_zip.c")
 file(READ "${_zip}" _content)
 set(_old "#    if defined(_MSC_VER)")
@@ -10,5 +11,18 @@ if(_already_patched EQUAL -1)
     if(_patched STREQUAL _content)
         message(FATAL_ERROR "OpenEXR ARM64 NEON include guard was not found")
     endif()
+    set(_content "${_patched}")
     file(WRITE "${_zip}" "${_patched}")
+endif()
+
+set(_sse_old "#if defined __SSE4_1__ || (_MSC_VER >= 1300 && (_M_IX86 || _M_X64) && !defined(_M_ARM64EC))")
+set(_sse_new "#if defined __SSE4_1__ || (_MSC_VER >= 1300 && (_M_IX86 || _M_X64) && !defined(_M_ARM64EC) && !defined(__clang__))")
+string(FIND "${_content}" "${_sse_new}" _sse_already_patched)
+if(_sse_already_patched EQUAL -1)
+    string(FIND "${_content}" "${_sse_old}" _sse_position)
+    if(_sse_position EQUAL -1)
+        message(FATAL_ERROR "OpenEXR SSE4.1 clang-cl guard was not found")
+    endif()
+    string(REPLACE "${_sse_old}" "${_sse_new}" _content "${_content}")
+    file(WRITE "${_zip}" "${_content}")
 endif()
