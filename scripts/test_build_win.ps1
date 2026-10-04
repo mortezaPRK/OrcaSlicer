@@ -765,7 +765,7 @@ $cases = @(
     # -i changes where the binary lands, so a rebuild that dropped it would
     # leave the path above pointing at a stale copy.
     @{ Name = 'the rebuild suggestion keeps -i'; Args = @('-s', '-l', '-x', '-i')
-       Contains = @('Rebuild after edits   build_win.bat -s -l -x -i --arch x64 --no-configure') }
+       Contains = @('Rebuild after edits   build_win.bat -s -l -x --arch x64 -i --no-configure') }
     # A deps retry has no install step to repeat.
     @{ Name = 'a deps retry drops it'; Args = @('-d', '-s', '-i', '--deps-dir', 'Z:\nope')
        DryRun = $false; ExpectExit = 1
