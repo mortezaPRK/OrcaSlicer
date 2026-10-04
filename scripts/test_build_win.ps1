@@ -690,18 +690,18 @@ $cases = @(
     # would clean a dependency tree that was not at fault.
     @{ Name = 'a failure names a retry scoped to the stage that failed'; Args = @('-d', '-s', '--deps-dir', 'Z:\nope')
        DryRun = $false; ExpectExit = 1
-       Contains = @('build_win.bat -d --deps-dir "Z:\nope" -c')
+       Contains = @('build_win.bat -d --arch x64 --deps-dir "Z:\nope" -c')
        NotContains = @('build_win.bat -ds') }
     # CMake's own failure here is hundreds of lines about package resolution.
     @{ Name = 'a missing dependency tree is named, not left to CMake'; Args = @('-s', '--deps-dir', 'Z:\nope')
        DryRun = $false; ExpectExit = 1
-       Contains = @('Dependencies not found at', 'Build them with build_win.bat -d --deps-dir "Z:\nope"')
+       Contains = @('Dependencies not found at', 'Build them with build_win.bat -d --arch x64 --deps-dir "Z:\nope"')
        NotContains = @('cmake -B', 'Try') }
     # Every other suggestion carries the flags that reproduce the run; a bare
     # -d would point at the MSVC tree after a clang build.
     @{ Name = 'the missing-deps hint names this toolchain'; Args = @('-s', '-l', '-x', '--deps-dir', 'deps/not-built')
        DryRun = $false; ExpectExit = 1
-       Contains = @('Build them with build_win.bat -d -l -x --deps-dir "deps/not-built"')
+       Contains = @('Build them with build_win.bat -d -l -x --arch x64 --deps-dir "deps/not-built"')
        NotExists = @('deps/not-built') }
     # A dry run configures nothing, so it must not depend on which trees happen
     # to exist on the machine running the suite.
@@ -727,7 +727,7 @@ $cases = @(
     # with. --deps-dir stays, because that is the tree that failed.
     @{ Name = 'a deps retry leaves out the slicer tree'; Args = @('-d', '-s', '--deps-dir', 'Z:\nope', '--build-dir', 'D:\b')
        DryRun = $false; ExpectExit = 1
-       Contains = @('build_win.bat -d --deps-dir "Z:\nope" -c')
+       Contains = @('build_win.bat -d --arch x64 --deps-dir "Z:\nope" -c')
        NotContains = @('--build-dir') }
     @{ Name = 'an unknown configuration stays a single line'; Args = @('-s', '--config', 'bogus'); ExpectExit = 1
        Contains = @('Unknown configuration')
@@ -742,18 +742,18 @@ $cases = @(
        Contains = @('Build the slicer      build_win.bat -s -l')
        NotContains = @('Run it') }
     @{ Name = 'a ninja slicer build offers a single target'; Args = @('-s', '-l', '-x')
-       Contains = @('Rebuild after edits   build_win.bat -s -l -x --no-configure', 'Rebuild one target')
+       Contains = @('Rebuild after edits   build_win.bat -s -l -x --arch x64 --no-configure', 'Rebuild one target')
        NotContains = @('Solution', 'Open in Visual Studio') }
     @{ Name = 'a visual studio build names the solution instead'; Args = @('-s')
        Contains = @('Solution      ', 'Open in Visual Studio build\OrcaSlicer.sln',
-                    'Rebuild after edits   build_win.bat -s --no-configure')
+                    'Rebuild after edits   build_win.bat -s --arch x64 --no-configure')
        NotContains = @('Rebuild one target') }
     @{ Name = 'the configuration and architecture come back'; Args = @('-s', '-l', '-x', '--config', 'debug', '--arch', 'arm64')
        Contains = @('build_win.bat -s -l -x --config debug --arch arm64 --no-configure') }
     @{ Name = 'the tree overrides come back quoted'; Args = @('-s', '--deps-dir', 'D:\d', '--build-dir', 'D:\b')
        Contains = @('--deps-dir "D:\d" --build-dir "D:\b"') }
     @{ Name = 'a pinned visual studio release comes back'; Args = @('-s', '--vs', '2022')
-       Contains = @('build_win.bat -s --vs 2022 --no-configure') }
+       Contains = @('build_win.bat -s --arch x64 --vs 2022 --no-configure') }
     # Autodetection writes what it found into the same variable, so a detected
     # release must not come back as though it had been asked for.
     @{ Name = 'a detected release does not'; Args = @('-s')
@@ -765,16 +765,16 @@ $cases = @(
     # -i changes where the binary lands, so a rebuild that dropped it would
     # leave the path above pointing at a stale copy.
     @{ Name = 'the rebuild suggestion keeps -i'; Args = @('-s', '-l', '-x', '-i')
-       Contains = @('Rebuild after edits   build_win.bat -s -l -x -i --no-configure') }
+       Contains = @('Rebuild after edits   build_win.bat -s -l -x -i --arch x64 --no-configure') }
     # A deps retry has no install step to repeat.
     @{ Name = 'a deps retry drops it'; Args = @('-d', '-s', '-i', '--deps-dir', 'Z:\nope')
        DryRun = $false; ExpectExit = 1
-       Contains = @('build_win.bat -d --deps-dir "Z:\nope" -c')
+       Contains = @('build_win.bat -d --arch x64 --deps-dir "Z:\nope" -c')
        NotContains = @('-d -i') }
     # Naming a target builds it and its dependencies, not its dependents, so
     # the binary on disk is whatever the last full build left there.
     @{ Name = 'a single-target build does not claim the whole binary'; Args = @('-s', '-l', '-x', '--slicer-target', 'glad')
-       Contains = @('Target        glad', 'Relink the binary     build_win.bat -s -l -x --no-configure')
+       Contains = @('Target        glad', 'Relink the binary     build_win.bat -s -l -x --arch x64 --no-configure')
        NotContains = @('Run it', 'orca-slicer.exe', 'Rebuild after edits') }
     # The executable has a target of its own, and naming that one does relink.
     @{ Name = 'naming the executable target still claims the binary'; Args = @('-s', '-l', '-x', '--slicer-target', 'OrcaSlicer')
@@ -787,7 +787,7 @@ $cases = @(
     # The line supplies its own tree, so the one this run used must not ride
     # along and contradict it.
     @{ Name = 'the bundle line names one tree, not two'; Args = @('-s', '-p', '-l', '-x', '--deps-dir', 'D:\shared')
-       Contains = @('then build_win.bat -s -l -x --deps-dir <path>')
+       Contains = @('then build_win.bat -s -l -x --arch x64 --deps-dir <path>')
        NotContains = @('--deps-dir "D:\shared" --deps-dir') }
     @{ Name = 'installing prerequisites suggests the build that follows'; Args = @('-u', '-l')
        Contains = @('Restart this shell', 'build_win.bat -ds -l')
