@@ -20,9 +20,10 @@ if ("${DEPS_ARCH}" STREQUAL "arm64" AND CMAKE_CXX_COMPILER_ID STREQUAL Clang)
 endif ()
 
 # OpenCV's KleidiCV HAL adds ARM NEON translation units even when cross
-# compiling the x86_64 macOS dependency bundle from an ARM runner.
+# compiling the x86_64 macOS dependency bundle from an ARM runner. Use the
+# target architecture: DEPS_ARCH is only set by the Windows dependency build.
 set(_disable_kleidicv "")
-if (APPLE AND "${DEPS_ARCH}" STREQUAL "x86_64")
+if (APPLE AND CMAKE_OSX_ARCHITECTURES MATCHES "x86_64")
     set(_disable_kleidicv "-DWITH_KLEIDICV=OFF")
 endif ()
 
