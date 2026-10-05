@@ -1119,11 +1119,6 @@ function(orcaslicer_copy_dlls target config postfix output_dlls)
         message ("set out_dir to CMAKE_CURRENT_BINARY_DIR: ${_out_dir}")
     endif ()
 
-    file(COPY ${TOP_LEVEL_PROJECT_DIR}/deps/GMP/gmp/lib/win-${_arch}/libgmp-10.dll
-            ${TOP_LEVEL_PROJECT_DIR}/deps/MPFR/mpfr/lib/win-${_arch}/libmpfr-4.dll
-            ${TOP_LEVEL_PROJECT_DIR}/deps/WebView2/lib/win-${_arch}/WebView2Loader.dll
-        DESTINATION ${_out_dir})
-
     # Stage the OCCT toolkits libslic3r links (published as OCCT_LIBS), not whatever the
     # deps prefix happens to hold, and fail the configure if one of them is missing.
     if (NOT OCCT_LIBS)
@@ -1147,14 +1142,29 @@ function(orcaslicer_copy_dlls target config postfix output_dlls)
             "Rebuild the dependencies (build_release_vs2022.bat deps) with the same "
             "SLIC3R_CAD setting as this project.")
     endif ()
-    file(COPY ${_occt_dlls}
-            ${CMAKE_PREFIX_PATH}/bin/freetype.dll
-            ${CMAKE_PREFIX_PATH}/bin/avformat-61.dll
-            ${CMAKE_PREFIX_PATH}/bin/avcodec-61.dll
-            ${CMAKE_PREFIX_PATH}/bin/swresample-5.dll
-            ${CMAKE_PREFIX_PATH}/bin/swscale-8.dll
-            ${CMAKE_PREFIX_PATH}/bin/avutil-59.dll
-         DESTINATION ${_out_dir})
+    # Configure may call this function repeatedly for different executable
+    # targets that share an output directory. file(COPY) reports ERROR_FILE_EXISTS
+    # for already staged DLLs on Windows, so copy files individually.
+    file(MAKE_DIRECTORY "${_out_dir}")
+    set(_runtime_dlls
+        ${TOP_LEVEL_PROJECT_DIR}/deps/GMP/gmp/lib/win-${_arch}/libgmp-10.dll
+        ${TOP_LEVEL_PROJECT_DIR}/deps/MPFR/mpfr/lib/win-${_arch}/libmpfr-4.dll
+        ${TOP_LEVEL_PROJECT_DIR}/deps/WebView2/lib/win-${_arch}/WebView2Loader.dll
+        ${_occt_dlls}
+        ${CMAKE_PREFIX_PATH}/bin/freetype.dll
+        ${CMAKE_PREFIX_PATH}/bin/avformat-61.dll
+        ${CMAKE_PREFIX_PATH}/bin/avcodec-61.dll
+        ${CMAKE_PREFIX_PATH}/bin/swresample-5.dll
+        ${CMAKE_PREFIX_PATH}/bin/swscale-8.dll
+        ${CMAKE_PREFIX_PATH}/bin/avutil-59.dll
+    )
+    foreach (_dll IN LISTS _runtime_dlls)
+        if (NOT EXISTS "${_dll}")
+            message(FATAL_ERROR "Required runtime DLL missing: ${_dll}")
+        endif ()
+        get_filename_component(_dll_name "${_dll}" NAME)
+        configure_file("${_dll}" "${_out_dir}/${_dll_name}" COPYONLY)
+    endforeach ()
 
     set(_dll_list
         ${_out_dir}/libgmp-10.dll
