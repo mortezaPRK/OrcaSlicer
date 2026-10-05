@@ -2,9 +2,9 @@
 #include "libslic3r/Platform.hpp"
 #include <boost/filesystem/operations.hpp>
 #include <cstddef>
-#include <boost/process/pipe.hpp>
-#include <boost/process/search_path.hpp>
-#include <boost/process/io.hpp>
+#include <boost/process/v1/pipe.hpp>
+#include <boost/process/v1/search_path.hpp>
+#include <boost/process/v1/io.hpp>
 #include <cassert>
 #include <algorithm>
 #include <boost/bind/bind.hpp>

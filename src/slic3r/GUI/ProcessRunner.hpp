@@ -1,7 +1,7 @@
 #ifndef slic3r_GUI_ProcessRunner_hpp_
 #define slic3r_GUI_ProcessRunner_hpp_
 
-#include <boost/process/pipe.hpp>
+#include <boost/process/v1/pipe.hpp>
 #include <wx/event.h>
 #include <wx/timer.h>
 

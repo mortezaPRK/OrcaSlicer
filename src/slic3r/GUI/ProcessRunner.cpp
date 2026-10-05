@@ -1,9 +1,9 @@
 #include "ProcessRunner.hpp"
 
-#include <boost/process/cmd.hpp>
-#include <boost/process/args.hpp>
-#include <boost/process/env.hpp>
-#include <boost/process.hpp>
+#include <boost/process/v1/cmd.hpp>
+#include <boost/process/v1/args.hpp>
+#include <boost/process/v1/env.hpp>
+#include <boost/process/v1.hpp>
 #include <wx/event.h>
 #include <wx/timer.h>
 #include <string>
@@ -12,10 +12,9 @@
 #include <vector>
 #include <system_error>
 #include <memory>
-#include <boost/process/pipe.hpp>
-#include <boost/process/io.hpp>
+#include <boost/process/v1/pipe.hpp>
+#include <boost/process/v1/io.hpp>
 #include <exception>
-#include <boost/process/v1/env.hpp>
 #ifdef _WIN32
 #include <boost/process/v1/windows.hpp>
 #endif

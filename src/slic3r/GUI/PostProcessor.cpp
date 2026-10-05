@@ -27,8 +27,8 @@
 
 // BBS
 #include <algorithm>
-#include <boost/process/pipe.hpp>
-#include <boost/process/io.hpp>
+#include <boost/process/v1/pipe.hpp>
+#include <boost/process/v1/io.hpp>
 #include <cstring>
 #include <cstdio>
 #include <exception>

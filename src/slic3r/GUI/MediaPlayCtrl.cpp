@@ -41,10 +41,10 @@
 #include <cstddef>
 #include <cstdlib>
 #include <cstdio>
-#include <boost/process/pipe.hpp>
-#include <boost/process/start_dir.hpp>
-#include <boost/process/io.hpp>
-#include <boost/process/handles.hpp>
+#include <boost/process/v1/pipe.hpp>
+#include <boost/process/v1/start_dir.hpp>
+#include <boost/process/v1/io.hpp>
+#include <boost/process/v1/handles.hpp>
 #include <exception>
 #include <slic3r/GUI/DeviceManager.hpp>
 #include <string>
